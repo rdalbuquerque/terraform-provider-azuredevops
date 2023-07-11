@@ -759,7 +759,6 @@ func getKVSecretServiceEndpointProxy(clients *client.AggregatedClient, kvName st
 		log.Printf(":: variable_group :: invalid client secrets, retrying...")
 		time.Sleep(2 * time.Second)
 	}
-	log.Printf("[INFO] :: variable_group :: maxRetries reached, returning last error")
 	return nil, fmt.Errorf("Invalid client secret provided. Full error: ( code: %s, messge: %s )", *reqResult.StatusCode, *reqResult.ErrorMessage)
 }
 
