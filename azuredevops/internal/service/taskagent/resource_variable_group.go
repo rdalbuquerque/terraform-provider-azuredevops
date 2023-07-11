@@ -3,6 +3,7 @@ package taskagent
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/url"
 	"strconv"
 	"strings"
@@ -746,7 +747,20 @@ func getKVSecretServiceEndpointProxy(clients *client.AggregatedClient, kvName st
 		(*reqArgs.ServiceEndpointRequest.DataSourceDetails.Parameters)["SkipToken"] = token
 		reqArgs.ServiceEndpointRequest.DataSourceDetails.DataSourceName = converter.String("AzureKeyVaultSecretsWithSkipToken")
 	}
-	return clients.ServiceEndpointClient.ExecuteServiceEndpointRequest(clients.Ctx, reqArgs)
+	maxRetries := 15
+	var reqResult *serviceendpoint.ServiceEndpointRequestResult
+	var err error
+	log.Printf(":: variable_group :: Initiating retry logic")
+	for i := 0; i < maxRetries; i++ {
+		if reqResult, err = clients.ServiceEndpointClient.ExecuteServiceEndpointRequest(clients.Ctx, reqArgs); !strings.Contains(*reqResult.ErrorMessage, "Invalid client secret provided") {
+			log.Printf(":: variable_group :: nothing wrong with client secret, returning result!")
+			return reqResult, err
+		}
+		log.Printf(":: variable_group :: invalid client secrets, retrying...")
+		time.Sleep(2 * time.Second)
+	}
+	log.Printf("[INFO] :: variable_group :: maxRetries reached, returning last error")
+	return nil, fmt.Errorf("Invalid client secret provided. Full error: ( code: %s, messge: %s )", *reqResult.StatusCode, *reqResult.ErrorMessage)
 }
 
 func getSecretName(secretID string) (secret string) {
