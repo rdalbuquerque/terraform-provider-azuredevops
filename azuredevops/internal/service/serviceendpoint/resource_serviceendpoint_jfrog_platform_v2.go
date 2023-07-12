@@ -14,7 +14,7 @@ import (
 
 // ResourceServiceEndpointJFrogPlatformV2 schema and implementation for JFrog Artifactory service endpoint resource
 func ResourceServiceEndpointJFrogPlatformV2() *schema.Resource {
-	r := genBaseServiceEndpointResource(flattenServiceEndpointArtifactoryV2, expandServiceEndpointJFrogPlatformV2)
+	r := genBaseServiceEndpointResource(flattenServiceEndpointArtifactoryV2, expandServiceEndpointJFrogPlatformV2, false)
 
 	r.Schema["url"] = &schema.Schema{
 		Type:     schema.TypeString,

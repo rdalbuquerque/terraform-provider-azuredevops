@@ -11,7 +11,7 @@ import (
 
 // ResourceServiceEndpointSonarQube schema and implementation for SonarQube service endpoint resource
 func ResourceServiceEndpointSonarQube() *schema.Resource {
-	r := genBaseServiceEndpointResource(flattenServiceEndpointSonarQube, expandServiceEndpointSonarQube)
+	r := genBaseServiceEndpointResource(flattenServiceEndpointSonarQube, expandServiceEndpointSonarQube, false)
 
 	r.Schema["url"] = &schema.Schema{
 		Type:         schema.TypeString,

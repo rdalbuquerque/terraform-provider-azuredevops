@@ -10,7 +10,7 @@ import (
 
 // ResourceServiceEndpointAws schema and implementation for aws service endpoint resource
 func ResourceServiceEndpointAws() *schema.Resource {
-	r := genBaseServiceEndpointResource(flattenServiceEndpointAws, expandServiceEndpointAws)
+	r := genBaseServiceEndpointResource(flattenServiceEndpointAws, expandServiceEndpointAws, false)
 	r.Schema["access_key_id"] = &schema.Schema{
 		Type:        schema.TypeString,
 		Required:    true,

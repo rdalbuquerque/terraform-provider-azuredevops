@@ -154,7 +154,7 @@ func makeSchemaServiceAccount(r *schema.Resource) {
 
 // ResourceServiceEndpointKubernetes schema and implementation for kubernetes service endpoint resource
 func ResourceServiceEndpointKubernetes() *schema.Resource {
-	r := genBaseServiceEndpointResource(flattenServiceEndpointKubernetes, expandServiceEndpointKubernetes)
+	r := genBaseServiceEndpointResource(flattenServiceEndpointKubernetes, expandServiceEndpointKubernetes, false)
 	r.Schema[resourceAttrAPIURL] = &schema.Schema{
 		Type:         schema.TypeString,
 		Required:     true,

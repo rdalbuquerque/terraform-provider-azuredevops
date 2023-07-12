@@ -17,7 +17,7 @@ const (
 
 // ResourceServiceEndpointGitHubEnterprise schema and implementation for github-enterprise service endpoint resource
 func ResourceServiceEndpointGitHubEnterprise() *schema.Resource {
-	r := genBaseServiceEndpointResource(flattenServiceEndpointGitHubEnterprise, expandServiceEndpointGitHubEnterprise)
+	r := genBaseServiceEndpointResource(flattenServiceEndpointGitHubEnterprise, expandServiceEndpointGitHubEnterprise, false)
 	authPersonal := &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			personalAccessTokenGithubEnterprise: {

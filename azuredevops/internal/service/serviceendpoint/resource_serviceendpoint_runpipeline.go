@@ -13,7 +13,7 @@ import (
 
 // ResourceServiceEndpointRunPipeline schema and implementation for Azure DevOps service endpoint resource
 func ResourceServiceEndpointRunPipeline() *schema.Resource {
-	r := genBaseServiceEndpointResource(flattenServiceEndpointRunPipeline, expandServiceEndpointRunPipeline)
+	r := genBaseServiceEndpointResource(flattenServiceEndpointRunPipeline, expandServiceEndpointRunPipeline, false)
 	r.Schema["organization_name"] = &schema.Schema{
 		Type:        schema.TypeString,
 		Required:    true,

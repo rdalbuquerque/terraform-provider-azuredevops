@@ -14,7 +14,7 @@ import (
 
 // ResourceServiceEndpointArgoCD schema and implementation for ArgoCD service endpoint resource
 func ResourceServiceEndpointArgoCD() *schema.Resource {
-	r := genBaseServiceEndpointResource(flattenServiceEndpointArgoCD, expandServiceEndpointArgoCD)
+	r := genBaseServiceEndpointResource(flattenServiceEndpointArgoCD, expandServiceEndpointArgoCD, false)
 
 	r.Schema["url"] = &schema.Schema{
 		Type:     schema.TypeString,

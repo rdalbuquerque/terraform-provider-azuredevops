@@ -9,7 +9,7 @@ import (
 
 // ResourceServiceEndpointGcp schema and implementation for gcp service endpoint resource
 func ResourceServiceEndpointGcp() *schema.Resource {
-	r := genBaseServiceEndpointResource(flattenServiceEndpointGcp, expandServiceEndpointGcp)
+	r := genBaseServiceEndpointResource(flattenServiceEndpointGcp, expandServiceEndpointGcp, false)
 	r.Schema["private_key"] = &schema.Schema{
 		Type:        schema.TypeString,
 		Required:    true,

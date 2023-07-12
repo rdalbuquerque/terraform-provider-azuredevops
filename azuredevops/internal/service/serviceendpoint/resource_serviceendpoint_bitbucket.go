@@ -11,7 +11,7 @@ import (
 
 // ResourceServiceEndpointBitBucket schema and implementation for bitbucket service endpoint resource
 func ResourceServiceEndpointBitBucket() *schema.Resource {
-	r := genBaseServiceEndpointResource(flattenServiceEndpointBitBucket, expandServiceEndpointBitBucket)
+	r := genBaseServiceEndpointResource(flattenServiceEndpointBitBucket, expandServiceEndpointBitBucket, false)
 	makeUnprotectedSchema(r, "username", "AZDO_BITBUCKET_SERVICE_CONNECTION_USERNAME", "The bitbucket username which should be used.")
 	makeProtectedSchema(r, "password", "AZDO_BITBUCKET_SERVICE_CONNECTION_PASSWORD", "The bitbucket password which should be used.")
 	return r

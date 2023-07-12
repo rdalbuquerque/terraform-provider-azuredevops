@@ -14,7 +14,7 @@ import (
 
 // ResourceServiceEndpointArtifactory schema and implementation for Artifactory service endpoint resource
 func ResourceServiceEndpointArtifactory() *schema.Resource {
-	r := genBaseServiceEndpointResource(flattenServiceEndpointArtifactory, expandServiceEndpointArtifactory)
+	r := genBaseServiceEndpointResource(flattenServiceEndpointArtifactory, expandServiceEndpointArtifactory, false)
 
 	r.Schema["url"] = &schema.Schema{
 		Type:     schema.TypeString,

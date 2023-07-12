@@ -12,7 +12,7 @@ import (
 )
 
 func ResourceServiceEndpointOctopusDeploy() *schema.Resource {
-	r := genBaseServiceEndpointResource(flattenServiceEndpointOctopusDeploy, expandServiceEndpointOctopusDeploy)
+	r := genBaseServiceEndpointResource(flattenServiceEndpointOctopusDeploy, expandServiceEndpointOctopusDeploy, false)
 	r.Schema["url"] = &schema.Schema{
 		Type:         schema.TypeString,
 		Required:     true,

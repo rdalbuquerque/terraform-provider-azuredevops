@@ -38,11 +38,11 @@ var opState = operationState{
 
 // genBaseServiceEndpointResource creates a Resource with the common parts
 // that all Service Endpoints require.
-func genBaseServiceEndpointResource(f flatFunc, e expandFunc) *schema.Resource {
+func genBaseServiceEndpointResource(f flatFunc, e expandFunc, validateOnUpdate bool) *schema.Resource {
 	return &schema.Resource{
 		Create: genServiceEndpointCreateFunc(f, e),
 		Read:   genServiceEndpointReadFunc(f),
-		Update: genServiceEndpointUpdateFunc(f, e),
+		Update: genServiceEndpointUpdateFunc(f, e, validateOnUpdate),
 		Delete: genServiceEndpointDeleteFunc(e),
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(2 * time.Minute),
@@ -236,7 +236,7 @@ func genServiceEndpointReadFunc(flatFunc flatFunc) func(d *schema.ResourceData, 
 	}
 }
 
-func genServiceEndpointUpdateFunc(flatFunc flatFunc, expandFunc expandFunc) schema.UpdateFunc { //nolint:staticcheck
+func genServiceEndpointUpdateFunc(flatFunc flatFunc, expandFunc expandFunc, validate bool) schema.UpdateFunc { //nolint:staticcheck
 	return func(d *schema.ResourceData, m interface{}) error {
 		clients := m.(*client.AggregatedClient)
 		serviceEndpoint, projectID, err := expandFunc(d)
@@ -244,7 +244,7 @@ func genServiceEndpointUpdateFunc(flatFunc flatFunc, expandFunc expandFunc) sche
 			return fmt.Errorf(errMsgTfConfigRead, err)
 		}
 
-		updatedServiceEndpoint, err := updateServiceEndpoint(clients, serviceEndpoint)
+		updatedServiceEndpoint, err := updateServiceEndpoint(clients, serviceEndpoint, validate)
 		if err != nil {
 			return fmt.Errorf("Error updating service endpoint in Azure DevOps: %+v", err)
 		}
@@ -285,6 +285,38 @@ func createServiceEndpoint(clients *client.AggregatedClient, endpoint *serviceen
 	return createdServiceEndpoint, err
 }
 
+func validateServiceEndpointConnection(clients *client.AggregatedClient, endpoint *serviceendpoint.ServiceEndpoint) error {
+	reqArgs := serviceendpoint.ExecuteServiceEndpointRequestArgs{
+		ServiceEndpointRequest: &serviceendpoint.ServiceEndpointRequest{
+			DataSourceDetails: &serviceendpoint.DataSourceDetails{
+				DataSourceName: converter.String("TestConnection"),
+			},
+			ResultTransformationDetails: &serviceendpoint.ResultTransformationDetails{},
+		},
+		Project:    converter.String((*endpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String()),
+		EndpointId: converter.String(endpoint.Id.String()),
+	}
+
+	maxRetries := 15
+	retryInverval := 2
+	var reqResult *serviceendpoint.ServiceEndpointRequestResult
+	var err error
+	log.Printf(fmt.Sprintf(":: serviceendpoint/commons.go :: %s :: Initiating validation", *endpoint.Name))
+	for i := 0; i < maxRetries; i++ {
+		if reqResult, err = clients.ServiceEndpointClient.ExecuteServiceEndpointRequest(clients.Ctx, reqArgs); err != nil {
+			log.Printf(fmt.Sprintf(":: serviceendpoint/commons.go :: %s :: error during endpoint validation request", *endpoint.Name))
+			return err
+		} else if strings.EqualFold(*reqResult.StatusCode, "ok") {
+			log.Printf(fmt.Sprintf(":: serviceendpoint/commons.go :: %s :: successfully validated connection", *endpoint.Name))
+			return nil
+		}
+		log.Printf(fmt.Sprintf(":: serviceendpoint/commons.go :: %s :: validation failed, retrying...", *endpoint.Name))
+		time.Sleep(time.Duration(retryInverval) * time.Second)
+	}
+
+	return fmt.Errorf("Error validating connection: (type: %s, name: %s, code: %s, message: %s)", *endpoint.Type, *endpoint.Name, *reqResult.StatusCode, *reqResult.ErrorMessage)
+}
+
 // Service endpoint delete is an async operation, make sure service endpoint is deleted.
 func checkServiceEndpointStatus(clients *client.AggregatedClient, projectID *uuid.UUID, endPointID *uuid.UUID) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
@@ -309,7 +341,7 @@ func checkServiceEndpointStatus(clients *client.AggregatedClient, projectID *uui
 	}
 }
 
-func updateServiceEndpoint(clients *client.AggregatedClient, endpoint *serviceendpoint.ServiceEndpoint) (*serviceendpoint.ServiceEndpoint, error) {
+func updateServiceEndpoint(clients *client.AggregatedClient, endpoint *serviceendpoint.ServiceEndpoint, validate bool) (*serviceendpoint.ServiceEndpoint, error) {
 	if strings.EqualFold(*endpoint.Type, "github") && strings.EqualFold(*endpoint.Authorization.Scheme, "InstallationToken") {
 		return nil, fmt.Errorf("Github Apps can not be updated must match imported values exactly")
 	}
@@ -317,12 +349,23 @@ func updateServiceEndpoint(clients *client.AggregatedClient, endpoint *serviceen
 	if endpoint.ServiceEndpointProjectReferences == nil || len(*endpoint.ServiceEndpointProjectReferences) <= 0 {
 		return nil, fmt.Errorf("A ServiceEndpoint requires at least one ServiceEndpointProjectReference")
 	}
+
 	updatedServiceEndpoint, err := clients.ServiceEndpointClient.UpdateServiceEndpoint(
 		clients.Ctx,
 		serviceendpoint.UpdateServiceEndpointArgs{
 			Endpoint:   endpoint,
 			EndpointId: endpoint.Id,
 		})
+
+	if err != nil {
+		return nil, err
+	}
+
+	if validate {
+		if validationErr := validateServiceEndpointConnection(clients, updatedServiceEndpoint); validationErr != nil {
+			return nil, validationErr
+		}
+	}
 
 	return updatedServiceEndpoint, err
 }

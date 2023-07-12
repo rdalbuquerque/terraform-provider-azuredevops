@@ -14,7 +14,7 @@ const (
 )
 
 func ResourceServiceEndpointExternalTFS() *schema.Resource {
-	r := genBaseServiceEndpointResource(flattenServiceEndpointExternalTFS, expandServiceEndpointExternalTFS)
+	r := genBaseServiceEndpointResource(flattenServiceEndpointExternalTFS, expandServiceEndpointExternalTFS, false)
 	r.Schema["connection_url"] = &schema.Schema{
 		Type:         schema.TypeString,
 		ValidateFunc: validation.IsURLWithHTTPorHTTPS,

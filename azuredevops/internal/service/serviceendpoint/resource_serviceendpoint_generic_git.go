@@ -13,7 +13,7 @@ import (
 
 // ResourceServiceEndpointGenericGit schema and implementation for generic git service endpoint resource
 func ResourceServiceEndpointGenericGit() *schema.Resource {
-	r := genBaseServiceEndpointResource(flattenServiceEndpointGenericGit, expandServiceEndpointGenericGit)
+	r := genBaseServiceEndpointResource(flattenServiceEndpointGenericGit, expandServiceEndpointGenericGit, false)
 	r.Schema["repository_url"] = &schema.Schema{
 		Type:         schema.TypeString,
 		ValidateFunc: validation.IsURLWithHTTPorHTTPS,

@@ -11,7 +11,7 @@ import (
 
 // ResourceServiceEndpointGeneric schema and implementation for generic service endpoint resource
 func ResourceServiceEndpointGeneric() *schema.Resource {
-	r := genBaseServiceEndpointResource(flattenServiceEndpointGeneric, expandServiceEndpointGeneric)
+	r := genBaseServiceEndpointResource(flattenServiceEndpointGeneric, expandServiceEndpointGeneric, false)
 	r.Schema["server_url"] = &schema.Schema{
 		Type:         schema.TypeString,
 		ValidateFunc: validation.IsURLWithHTTPorHTTPS,

@@ -10,7 +10,7 @@ import (
 
 // ResourceServiceEndpointSonarCloud schema and implementation for SonarCloud service endpoint resource
 func ResourceServiceEndpointSonarCloud() *schema.Resource {
-	r := genBaseServiceEndpointResource(flattenServiceEndpointSonarCloud, expandServiceEndpointSonarCloud)
+	r := genBaseServiceEndpointResource(flattenServiceEndpointSonarCloud, expandServiceEndpointSonarCloud, false)
 
 	r.Schema["token"] = &schema.Schema{
 		Type:         schema.TypeString,

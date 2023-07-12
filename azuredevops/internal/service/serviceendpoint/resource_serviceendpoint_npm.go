@@ -10,7 +10,7 @@ import (
 
 // ResourceServiceEndpointNpm schema and implementation for npm service endpoint resource
 func ResourceServiceEndpointNpm() *schema.Resource {
-	r := genBaseServiceEndpointResource(flattenServiceEndpointNpm, expandServiceEndpointNpm)
+	r := genBaseServiceEndpointResource(flattenServiceEndpointNpm, expandServiceEndpointNpm, false)
 
 	r.Schema["url"] = &schema.Schema{
 		Type:         schema.TypeString,

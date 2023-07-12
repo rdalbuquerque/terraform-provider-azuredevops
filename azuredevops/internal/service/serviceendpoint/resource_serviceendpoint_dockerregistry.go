@@ -11,7 +11,7 @@ import (
 
 // ResourceServiceEndpointDockerRegistry schema and implementation for docker registry service endpoint resource
 func ResourceServiceEndpointDockerRegistry() *schema.Resource {
-	r := genBaseServiceEndpointResource(flattenServiceEndpointDockerRegistry, expandServiceEndpointDockerRegistry)
+	r := genBaseServiceEndpointResource(flattenServiceEndpointDockerRegistry, expandServiceEndpointDockerRegistry, false)
 	r.Schema["docker_registry"] = &schema.Schema{
 		Type:        schema.TypeString,
 		Required:    true,

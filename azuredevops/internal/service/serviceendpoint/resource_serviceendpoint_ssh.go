@@ -12,7 +12,7 @@ import (
 )
 
 func ResourceServiceEndpointSSH() *schema.Resource {
-	r := genBaseServiceEndpointResource(flattenServiceEndpointSSH, expandServiceEndpointSSH)
+	r := genBaseServiceEndpointResource(flattenServiceEndpointSSH, expandServiceEndpointSSH, false)
 	r.Schema["host"] = &schema.Schema{
 		Type:         schema.TypeString,
 		Required:     true,

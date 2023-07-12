@@ -9,7 +9,7 @@ import (
 
 // ResourceServiceEndpointIncomingWebhook schema and implementation for incoming webhook service endpoint resource
 func ResourceServiceEndpointIncomingWebhook() *schema.Resource {
-	r := genBaseServiceEndpointResource(flattenServiceEndpointIncomingWebhook, expandServiceEndpointIncomingWebhook)
+	r := genBaseServiceEndpointResource(flattenServiceEndpointIncomingWebhook, expandServiceEndpointIncomingWebhook, false)
 	r.Schema["webhook_name"] = &schema.Schema{
 		Type:        schema.TypeString,
 		Required:    true,

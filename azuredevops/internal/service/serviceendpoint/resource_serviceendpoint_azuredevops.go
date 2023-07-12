@@ -10,7 +10,7 @@ import (
 )
 
 func ResourceServiceEndpointAzureDevOps() *schema.Resource {
-	r := genBaseServiceEndpointResource(flattenServiceEndpointAzureDevOps, expandServiceEndpointAzureDevOps)
+	r := genBaseServiceEndpointResource(flattenServiceEndpointAzureDevOps, expandServiceEndpointAzureDevOps, false)
 	r.DeprecationMessage = "This resource is duplicate with azuredevops_serviceendpoint_runpipeline,  will be removed in the future, use azuredevops_serviceendpoint_runpipeline instead."
 	r.Schema["org_url"] = &schema.Schema{
 		Type:         schema.TypeString,

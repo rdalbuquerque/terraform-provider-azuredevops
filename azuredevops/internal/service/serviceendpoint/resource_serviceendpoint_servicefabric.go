@@ -19,7 +19,7 @@ const (
 
 // ResourceServiceEndpointServiceFabric schema and implementation for ServiceFabric service endpoint resource
 func ResourceServiceEndpointServiceFabric() *schema.Resource {
-	r := genBaseServiceEndpointResource(flattenServiceEndpointServiceFabric, expandServiceEndpointServiceFabric)
+	r := genBaseServiceEndpointResource(flattenServiceEndpointServiceFabric, expandServiceEndpointServiceFabric, false)
 
 	r.Schema["cluster_endpoint"] = &schema.Schema{
 		Type:        schema.TypeString,

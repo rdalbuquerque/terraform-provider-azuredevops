@@ -15,7 +15,7 @@ import (
 
 // ResourceServiceEndpointAzureRM schema and implementation for AzureRM service endpoint resource
 func ResourceServiceEndpointAzureRM() *schema.Resource {
-	r := genBaseServiceEndpointResource(flattenServiceEndpointAzureRM, expandServiceEndpointAzureRM)
+	r := genBaseServiceEndpointResource(flattenServiceEndpointAzureRM, expandServiceEndpointAzureRM, true)
 	makeUnprotectedSchema(r, "azurerm_spn_tenantid", "ARM_TENANT_ID", "The service principal tenant id which should be used.")
 
 	r.Schema["resource_group"] = &schema.Schema{

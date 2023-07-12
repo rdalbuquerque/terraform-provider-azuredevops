@@ -12,7 +12,7 @@ import (
 
 // ResourceServiceEndpointAzureCR schema and implementation for ACR service endpoint resource
 func ResourceServiceEndpointAzureCR() *schema.Resource {
-	r := genBaseServiceEndpointResource(flattenServiceEndpointAzureCR, expandServiceEndpointAzureCR)
+	r := genBaseServiceEndpointResource(flattenServiceEndpointAzureCR, expandServiceEndpointAzureCR, false)
 	makeUnprotectedSchema(r, "azurecr_spn_tenantid", "ACR_TENANT_ID", "The service principal tenant id which should be used.")
 	makeUnprotectedSchema(r, "azurecr_subscription_id", "ACR_SUBSCRIPTION_ID", "The Azure subscription Id which should be used.")
 	makeUnprotectedSchema(r, "azurecr_subscription_name", "ACR_SUBSCRIPTION_NAME", "The Azure subscription name which should be used.")
