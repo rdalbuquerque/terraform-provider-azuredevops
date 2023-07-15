@@ -41,11 +41,12 @@ func getManualAuthServiceEndpoint() serviceendpoint.ServiceEndpoint {
 			"subscriptionId":   "42125daf-72fd-417c-9ea7-080690625ad3", //fake value
 			"subscriptionName": "SUBSCRIPTION_TEST",
 		},
-		Id:    &azurermTestServiceEndpointAzureRMID,
-		Name:  converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
-		Owner: converter.String("library"), // Supported values are "library", "agentcloud"
-		Type:  converter.String("azurerm"),
-		Url:   converter.String("https://management.azure.com/"),
+		IsReady: converter.Bool(false),
+		Id:      &azurermTestServiceEndpointAzureRMID,
+		Name:    converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
+		Owner:   converter.String("library"), // Supported values are "library", "agentcloud"
+		Type:    converter.String("azurerm"),
+		Url:     converter.String("https://management.azure.com/"),
 		ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
 			{
 				ProjectReference: &serviceendpoint.ProjectReference{
@@ -77,11 +78,12 @@ var azurermTestServiceEndpointsAzureRM = []serviceendpoint.ServiceEndpoint{
 			"subscriptionId":   "42125daf-72fd-417c-9ea7-080690625ad3", //fake value
 			"subscriptionName": "SUBSCRIPTION_TEST",
 		},
-		Id:    &azurermTestServiceEndpointAzureRMID,
-		Name:  converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
-		Owner: converter.String("library"), // Supported values are "library", "agentcloud"
-		Type:  converter.String("azurerm"),
-		Url:   converter.String("https://management.azure.com/"),
+		IsReady: converter.Bool(true),
+		Id:      &azurermTestServiceEndpointAzureRMID,
+		Name:    converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
+		Owner:   converter.String("library"), // Supported values are "library", "agentcloud"
+		Type:    converter.String("azurerm"),
+		Url:     converter.String("https://management.azure.com/"),
 		ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
 			{
 				ProjectReference: &serviceendpoint.ProjectReference{
@@ -110,11 +112,12 @@ var azurermTestServiceEndpointsAzureRM = []serviceendpoint.ServiceEndpoint{
 			"subscriptionId":   "42125daf-72fd-417c-9ea7-080690625ad3", //fake value
 			"subscriptionName": "SUBSCRIPTION_TEST",
 		},
-		Id:    &azurermTestServiceEndpointAzureRMID,
-		Name:  converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
-		Owner: converter.String("library"), // Supported values are "library", "agentcloud"
-		Type:  converter.String("azurerm"),
-		Url:   converter.String("https://management.azure.com/"),
+		IsReady: converter.Bool(true),
+		Id:      &azurermTestServiceEndpointAzureRMID,
+		Name:    converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
+		Owner:   converter.String("library"), // Supported values are "library", "agentcloud"
+		Type:    converter.String("azurerm"),
+		Url:     converter.String("https://management.azure.com/"),
 		ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
 			{
 				ProjectReference: &serviceendpoint.ProjectReference{
@@ -154,15 +157,61 @@ func TestServiceEndpointAzureRM_Create_DoesNotSwallowError(t *testing.T) {
 
 		expectedArgs := serviceendpoint.CreateServiceEndpointArgs{Endpoint: &resource}
 
-		buildClient.
-			EXPECT().
-			CreateServiceEndpoint(clients.Ctx, expectedArgs).
-			Return(nil, errors.New("CreateServiceEndpoint() Failed")).
-			Times(1)
+		if *resource.IsReady {
+			reqArgs := serviceendpoint.ExecuteServiceEndpointRequestArgs{
+				ServiceEndpointRequest: &serviceendpoint.ServiceEndpointRequest{
+					DataSourceDetails: &serviceendpoint.DataSourceDetails{
+						DataSourceName: converter.String("TestConnection"),
+					},
+					ResultTransformationDetails: &serviceendpoint.ResultTransformationDetails{},
+					ServiceEndpointDetails: &serviceendpoint.ServiceEndpointDetails{
+						Data:          resource.Data,
+						Authorization: resource.Authorization,
+						Url:           resource.Url,
+						Type:          resource.Type,
+					},
+				},
+				Project:    converter.String((*resource.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String()),
+				EndpointId: converter.String(resource.Id.String()),
+			}
 
-		err := r.Create(resourceData, clients)
-		require.Contains(t, err.Error(), "CreateServiceEndpoint() Failed")
+			buildClient.
+				EXPECT().
+				CreateServiceEndpoint(clients.Ctx, expectedArgs).
+				Return(&resource, nil).
+				Times(1)
 
+			buildClient.
+				EXPECT().
+				ExecuteServiceEndpointRequest(clients.Ctx, reqArgs).
+				Return(nil, errors.New("ExecuteServiceEndpointRequest() Failed")).
+				Times(1)
+
+			deleteArgs := serviceendpoint.DeleteServiceEndpointArgs{
+				EndpointId: resource.Id,
+				ProjectIds: &[]string{
+					azurermTestServiceEndpointAzureRMProjectID.String(),
+				},
+			}
+			buildClient.
+				EXPECT().
+				DeleteServiceEndpoint(clients.Ctx, deleteArgs).
+				Return(nil).
+				Times(1)
+
+			err := r.Create(resourceData, clients)
+			require.Contains(t, err.Error(), "ExecuteServiceEndpointRequest() Failed")
+
+		} else {
+			buildClient.
+				EXPECT().
+				CreateServiceEndpoint(clients.Ctx, expectedArgs).
+				Return(nil, errors.New("CreateServiceEndpoint() Failed")).
+				Times(1)
+
+			err := r.Create(resourceData, clients)
+			require.Contains(t, err.Error(), "CreateServiceEndpoint() Failed")
+		}
 	}
 }
 
@@ -244,14 +293,41 @@ func TestServiceEndpointAzureRM_Update_DoesNotSwallowError(t *testing.T) {
 			EndpointId: resource.Id,
 		}
 
-		buildClient.
-			EXPECT().
-			UpdateServiceEndpoint(clients.Ctx, expectedArgs).
-			Return(nil, errors.New("UpdateServiceEndpoint() Failed")).
-			Times(1)
+		if *resource.IsReady {
+			reqArgs := serviceendpoint.ExecuteServiceEndpointRequestArgs{
+				ServiceEndpointRequest: &serviceendpoint.ServiceEndpointRequest{
+					DataSourceDetails: &serviceendpoint.DataSourceDetails{
+						DataSourceName: converter.String("TestConnection"),
+					},
+					ResultTransformationDetails: &serviceendpoint.ResultTransformationDetails{},
+					ServiceEndpointDetails: &serviceendpoint.ServiceEndpointDetails{
+						Data:          resource.Data,
+						Authorization: resource.Authorization,
+						Url:           resource.Url,
+						Type:          resource.Type,
+					},
+				},
+				Project:    converter.String((*resource.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String()),
+				EndpointId: converter.String(resource.Id.String()),
+			}
+			buildClient.
+				EXPECT().
+				ExecuteServiceEndpointRequest(clients.Ctx, reqArgs).
+				Return(nil, errors.New("ExecuteServiceEndpointRequest() failed")).
+				Times(1)
 
-		err := r.Update(resourceData, clients)
-		require.Contains(t, err.Error(), "UpdateServiceEndpoint() Failed")
+			err := r.Update(resourceData, clients)
+			require.Contains(t, err.Error(), "ExecuteServiceEndpointRequest() Failed")
+		} else {
+			buildClient.
+				EXPECT().
+				UpdateServiceEndpoint(clients.Ctx, expectedArgs).
+				Return(nil, errors.New("UpdateServiceEndpoint() Failed")).
+				Times(1)
+
+			err := r.Update(resourceData, clients)
+			require.Contains(t, err.Error(), "UpdateServiceEndpoint() Failed")
+		}
 	}
 }
 

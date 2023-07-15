@@ -64,6 +64,11 @@ func genBaseServiceEndpointResource(f flatFunc, e expandFunc) *schema.Resource {
 				ForceNew:     true,
 				ValidateFunc: validation.StringIsNotWhiteSpace,
 			},
+			"validate": {
+				Type:     schema.TypeBool,
+				Required: false,
+				Default:  false,
+			},
 			"description": {
 				Type:         schema.TypeString,
 				Optional:     true,
@@ -94,9 +99,10 @@ func doBaseExpansion(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, 
 	projectID := uuid.MustParse(d.Get("project_id").(string))
 	name := converter.String(d.Get("service_endpoint_name").(string))
 	serviceEndpoint := &serviceendpoint.ServiceEndpoint{
-		Id:    serviceEndpointID,
-		Name:  name,
-		Owner: converter.String("library"),
+		Id:      serviceEndpointID,
+		Name:    name,
+		Owner:   converter.String("library"),
+		IsReady: converter.Bool(d.Get("validate").(bool)),
 		ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
 			{
 				ProjectReference: &serviceendpoint.ProjectReference{
@@ -117,6 +123,7 @@ func doBaseFlattening(d *schema.ResourceData, serviceEndpoint *serviceendpoint.S
 	d.Set("service_endpoint_name", serviceEndpoint.Name)
 	d.Set("project_id", projectID.String())
 	d.Set("description", (*serviceEndpoint.ServiceEndpointProjectReferences)[0].Description)
+	d.Set("validate", *serviceEndpoint.IsReady)
 
 	if serviceEndpoint.Authorization != nil && serviceEndpoint.Authorization.Scheme != nil {
 		d.Set("authorization", &map[string]interface{}{
@@ -172,6 +179,22 @@ func genServiceEndpointCreateFunc(flatFunc flatFunc, expandFunc expandFunc) func
 		createdServiceEndpoint, err := createServiceEndpoint(clients, serviceEndpoint)
 		if err != nil {
 			return fmt.Errorf("Error creating service endpoint in Azure DevOps: %+v", err)
+		}
+
+		if *serviceEndpoint.IsReady {
+			if err := validateServiceEndpointConnection(clients, createdServiceEndpoint); err != nil {
+				if delErr := clients.ServiceEndpointClient.DeleteServiceEndpoint(
+					clients.Ctx,
+					serviceendpoint.DeleteServiceEndpointArgs{
+						ProjectIds: &[]string{
+							projectID.String(),
+						},
+						EndpointId: createdServiceEndpoint.Id,
+					}); delErr != nil {
+					return fmt.Errorf(" Delete service endpoint error %v", err)
+				}
+				return err
+			}
 		}
 
 		stateConf := &resource.StateChangeConf{
@@ -276,18 +299,17 @@ func createServiceEndpoint(clients *client.AggregatedClient, endpoint *serviceen
 		return nil, fmt.Errorf("A ServiceEndpoint requires at least one ServiceEndpointProjectReference")
 	}
 
-	if createdServiceEndpoint, err := clients.ServiceEndpointClient.CreateServiceEndpoint(
+	createdServiceEndpoint, err := clients.ServiceEndpointClient.CreateServiceEndpoint(
 		clients.Ctx,
 		serviceendpoint.CreateServiceEndpointArgs{
 			Endpoint: endpoint,
-		}); err != nil {
+		})
+
+	if err != nil {
 		return nil, err
-	} else {
-		if validationErr := validateServiceEndpointConnection(clients, createdServiceEndpoint); validationErr != nil {
-			return nil, validationErr
-		}
-		return createdServiceEndpoint, err
 	}
+
+	return createdServiceEndpoint, err
 }
 
 func validateServiceEndpointConnection(clients *client.AggregatedClient, endpoint *serviceendpoint.ServiceEndpoint) error {
@@ -297,6 +319,12 @@ func validateServiceEndpointConnection(clients *client.AggregatedClient, endpoin
 				DataSourceName: converter.String("TestConnection"),
 			},
 			ResultTransformationDetails: &serviceendpoint.ResultTransformationDetails{},
+			ServiceEndpointDetails: &serviceendpoint.ServiceEndpointDetails{
+				Data:          endpoint.Data,
+				Authorization: endpoint.Authorization,
+				Url:           endpoint.Url,
+				Type:          endpoint.Type,
+			},
 		},
 		Project:    converter.String((*endpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String()),
 		EndpointId: converter.String(endpoint.Id.String()),
@@ -355,19 +383,20 @@ func updateServiceEndpoint(clients *client.AggregatedClient, endpoint *serviceen
 		return nil, fmt.Errorf("A ServiceEndpoint requires at least one ServiceEndpointProjectReference")
 	}
 
-	if updatedServiceEndpoint, err := clients.ServiceEndpointClient.UpdateServiceEndpoint(
+	if *endpoint.IsReady {
+		if validationErr := validateServiceEndpointConnection(clients, endpoint); validationErr != nil {
+			return nil, validationErr
+		}
+	}
+
+	updatedServiceEndpoint, err := clients.ServiceEndpointClient.UpdateServiceEndpoint(
 		clients.Ctx,
 		serviceendpoint.UpdateServiceEndpointArgs{
 			Endpoint:   endpoint,
 			EndpointId: endpoint.Id,
-		}); err != nil {
-		return nil, err
-	} else {
-		if validationErr := validateServiceEndpointConnection(clients, updatedServiceEndpoint); validationErr != nil {
-			return nil, validationErr
-		}
-		return updatedServiceEndpoint, err
-	}
+		})
+
+	return updatedServiceEndpoint, err
 }
 
 func deleteServiceEndpoint(clients *client.AggregatedClient, projectID *uuid.UUID, serviceEndpointID *uuid.UUID, timeout time.Duration) error {
@@ -449,6 +478,13 @@ func dataSourceGenBaseServiceEndpointResource(dataSourceReadFunc schema.ReadFunc
 				Computed:     true,
 				ExactlyOneOf: []string{"service_endpoint_name", "service_endpoint_id"},
 				ValidateFunc: validation.IsUUID,
+			},
+
+			"validate": {
+				Description: "Whether or not to validate the serviceendpoint on creation/update",
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
 			},
 
 			"authorization": {
