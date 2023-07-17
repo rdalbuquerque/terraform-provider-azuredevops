@@ -30,7 +30,7 @@ func ResourceServiceEndpointAzureDevOps() *schema.Resource {
 	return r
 }
 
-func expandServiceEndpointAzureDevOps(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *uuid.UUID, error) {
+func expandServiceEndpointAzureDevOps(d *schema.ResourceData) (*serviceEndpointWithValidation, *uuid.UUID, error) {
 	serviceEndpoint, projectID := doBaseExpansion(d)
 	serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
 		Parameters: &map[string]string{
@@ -43,12 +43,12 @@ func expandServiceEndpointAzureDevOps(d *schema.ResourceData) (*serviceendpoint.
 	serviceEndpoint.Data = &map[string]string{
 		"releaseUrl": d.Get("release_api_url").(string),
 	}
-	return serviceEndpoint, projectID, nil
+	return &serviceEndpointWithValidation{endpoint: serviceEndpoint}, projectID, nil
 }
 
-func flattenServiceEndpointAzureDevOps(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
-	doBaseFlattening(d, serviceEndpoint, projectID)
-	d.Set("org_url", serviceEndpoint.Url)
+func flattenServiceEndpointAzureDevOps(d *schema.ResourceData, serviceEndpoint *serviceEndpointWithValidation, projectID *uuid.UUID) {
+	doBaseFlattening(d, serviceEndpoint.endpoint, projectID)
+	d.Set("org_url", serviceEndpoint.endpoint.Url)
 	tfhelper.HelpFlattenSecret(d, "password")
-	d.Set("release_api_url", (*serviceEndpoint.Data)["releaseUrl"])
+	d.Set("release_api_url", (*serviceEndpoint.endpoint.Data)["releaseUrl"])
 }

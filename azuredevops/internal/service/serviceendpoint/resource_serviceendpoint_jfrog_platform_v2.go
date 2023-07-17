@@ -83,7 +83,7 @@ func ResourceServiceEndpointJFrogPlatformV2() *schema.Resource {
 }
 
 // Convert internal Terraform data structure to an AzDO data structure
-func expandServiceEndpointJFrogPlatformV2(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *uuid.UUID, error) {
+func expandServiceEndpointJFrogPlatformV2(d *schema.ResourceData) (*serviceEndpointWithValidation, *uuid.UUID, error) {
 	serviceEndpoint, projectID := doBaseExpansion(d)
 	serviceEndpoint.Type = converter.String("jfrogPlatformService")
 	serviceEndpoint.Url = converter.String(d.Get("url").(string))
@@ -115,5 +115,5 @@ func expandServiceEndpointJFrogPlatformV2(d *schema.ResourceData) (*serviceendpo
 		Scheme:     &authScheme,
 	}
 
-	return serviceEndpoint, projectID, nil
+	return &serviceEndpointWithValidation{endpoint: serviceEndpoint}, projectID, nil
 }

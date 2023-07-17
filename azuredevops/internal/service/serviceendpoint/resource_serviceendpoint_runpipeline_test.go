@@ -54,7 +54,7 @@ var rpTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 func TestServiceEndpointRunPipeline_ExpandFlatten_Roundtrip(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, ResourceServiceEndpointRunPipeline().Schema, nil)
 	rpConfigureExtraFields(resourceData)
-	flattenServiceEndpointRunPipeline(resourceData, &rpTestServiceEndpoint, rpTestServiceEndpointProjectID)
+	flattenServiceEndpointRunPipeline(resourceData, &serviceEndpointWithValidation{endpoint: &rpTestServiceEndpoint}, rpTestServiceEndpointProjectID)
 
 	serviceEndpointAfterRoundTrip, projectID, err := expandServiceEndpointRunPipeline(resourceData)
 
@@ -71,7 +71,7 @@ func TestServiceEndpointRunPipeline_Create_DoesNotSwallowError(t *testing.T) {
 	r := ResourceServiceEndpointRunPipeline()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
 	rpConfigureExtraFields(resourceData)
-	flattenServiceEndpointRunPipeline(resourceData, &rpTestServiceEndpoint, rpTestServiceEndpointProjectID)
+	flattenServiceEndpointRunPipeline(resourceData, &serviceEndpointWithValidation{endpoint: &rpTestServiceEndpoint}, rpTestServiceEndpointProjectID)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -94,7 +94,7 @@ func TestServiceEndpointRunPipeline_Read_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceServiceEndpointRunPipeline()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointRunPipeline(resourceData, &rpTestServiceEndpoint, rpTestServiceEndpointProjectID)
+	flattenServiceEndpointRunPipeline(resourceData, &serviceEndpointWithValidation{endpoint: &rpTestServiceEndpoint}, rpTestServiceEndpointProjectID)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -120,7 +120,7 @@ func TestServiceEndpointRunPipeline_Delete_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceServiceEndpointRunPipeline()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointRunPipeline(resourceData, &rpTestServiceEndpoint, rpTestServiceEndpointProjectID)
+	flattenServiceEndpointRunPipeline(resourceData, &serviceEndpointWithValidation{endpoint: &rpTestServiceEndpoint}, rpTestServiceEndpointProjectID)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -149,7 +149,7 @@ func TestServiceEndpointRunPipeline_Update_DoesNotSwallowError(t *testing.T) {
 	r := ResourceServiceEndpointRunPipeline()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
 	rpConfigureExtraFields(resourceData)
-	flattenServiceEndpointRunPipeline(resourceData, &rpTestServiceEndpoint, rpTestServiceEndpointProjectID)
+	flattenServiceEndpointRunPipeline(resourceData, &serviceEndpointWithValidation{endpoint: &rpTestServiceEndpoint}, rpTestServiceEndpointProjectID)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}

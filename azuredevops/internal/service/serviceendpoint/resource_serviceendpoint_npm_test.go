@@ -49,7 +49,7 @@ var npmTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 // verifies that the flatten/expand round trip yields the same service endpoint
 func TestServiceEndpointNpm_ExpandFlatten_Roundtrip(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, ResourceServiceEndpointNpm().Schema, nil)
-	flattenServiceEndpointNpm(resourceData, &npmTestServiceEndpoint, npmTestServiceEndpointProjectID)
+	flattenServiceEndpointNpm(resourceData, &serviceEndpointWithValidation{endpoint: &npmTestServiceEndpoint}, npmTestServiceEndpointProjectID)
 
 	serviceEndpointAfterRoundTrip, projectID, err := expandServiceEndpointNpm(resourceData)
 
@@ -65,7 +65,7 @@ func TestServiceEndpointNpm_Create_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceServiceEndpointNpm()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointNpm(resourceData, &npmTestServiceEndpoint, npmTestServiceEndpointProjectID)
+	flattenServiceEndpointNpm(resourceData, &serviceEndpointWithValidation{endpoint: &npmTestServiceEndpoint}, npmTestServiceEndpointProjectID)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -88,7 +88,7 @@ func TestServiceEndpointNpm_Read_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceServiceEndpointNpm()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointNpm(resourceData, &npmTestServiceEndpoint, npmTestServiceEndpointProjectID)
+	flattenServiceEndpointNpm(resourceData, &serviceEndpointWithValidation{endpoint: &npmTestServiceEndpoint}, npmTestServiceEndpointProjectID)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -114,7 +114,7 @@ func TestServiceEndpointNpm_Delete_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceServiceEndpointNpm()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointNpm(resourceData, &npmTestServiceEndpoint, npmTestServiceEndpointProjectID)
+	flattenServiceEndpointNpm(resourceData, &serviceEndpointWithValidation{endpoint: &npmTestServiceEndpoint}, npmTestServiceEndpointProjectID)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -142,7 +142,7 @@ func TestServiceEndpointNpm_Update_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceServiceEndpointNpm()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointNpm(resourceData, &npmTestServiceEndpoint, npmTestServiceEndpointProjectID)
+	flattenServiceEndpointNpm(resourceData, &serviceEndpointWithValidation{endpoint: &npmTestServiceEndpoint}, npmTestServiceEndpointProjectID)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}

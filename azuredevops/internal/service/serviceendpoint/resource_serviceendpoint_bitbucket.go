@@ -17,7 +17,7 @@ func ResourceServiceEndpointBitBucket() *schema.Resource {
 	return r
 }
 
-func expandServiceEndpointBitBucket(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *uuid.UUID, error) {
+func expandServiceEndpointBitBucket(d *schema.ResourceData) (*serviceEndpointWithValidation, *uuid.UUID, error) {
 	serviceEndpoint, projectID := doBaseExpansion(d)
 	serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
 		Parameters: &map[string]string{
@@ -28,11 +28,11 @@ func expandServiceEndpointBitBucket(d *schema.ResourceData) (*serviceendpoint.Se
 	}
 	serviceEndpoint.Type = converter.String(string(model.RepoTypeValues.Bitbucket))
 	serviceEndpoint.Url = converter.String("https://api.bitbucket.org/")
-	return serviceEndpoint, projectID, nil
+	return &serviceEndpointWithValidation{endpoint: serviceEndpoint}, projectID, nil
 }
 
-func flattenServiceEndpointBitBucket(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
-	doBaseFlattening(d, serviceEndpoint, projectID)
-	d.Set("username", (*serviceEndpoint.Authorization.Parameters)["username"])
+func flattenServiceEndpointBitBucket(d *schema.ResourceData, serviceEndpoint *serviceEndpointWithValidation, projectID *uuid.UUID) {
+	doBaseFlattening(d, serviceEndpoint.endpoint, projectID)
+	d.Set("username", (*serviceEndpoint.endpoint.Authorization.Parameters)["username"])
 	tfhelper.HelpFlattenSecret(d, "password")
 }

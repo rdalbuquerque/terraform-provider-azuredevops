@@ -140,7 +140,7 @@ func servicefabricServerCertificateCommonNameSchema(blockName string) *schema.Sc
 }
 
 // Convert internal Terraform data structure to an AzDO data structure
-func expandServiceEndpointServiceFabric(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *uuid.UUID, error) {
+func expandServiceEndpointServiceFabric(d *schema.ResourceData) (*serviceEndpointWithValidation, *uuid.UUID, error) {
 	serviceEndpoint, projectID := doBaseExpansion(d)
 	serviceEndpoint.Type = converter.String("servicefabric")
 	serviceEndpoint.Url = converter.String(d.Get("cluster_endpoint").(string))
@@ -154,7 +154,7 @@ func expandServiceEndpointServiceFabric(d *schema.ResourceData) (*serviceendpoin
 			Parameters: &parameters,
 			Scheme:     converter.String("Certificate"),
 		}
-		return serviceEndpoint, projectID, nil
+		return &serviceEndpointWithValidation{endpoint: serviceEndpoint}, projectID, nil
 	}
 
 	azureActiveDirectory, azureActiveDirectoryExists := d.GetOk(resourceBlockServiceFabricAzureActiveDirectory)
@@ -167,7 +167,7 @@ func expandServiceEndpointServiceFabric(d *schema.ResourceData) (*serviceendpoin
 			Parameters: &parameters,
 			Scheme:     converter.String("UsernamePassword"),
 		}
-		return serviceEndpoint, projectID, nil
+		return &serviceEndpointWithValidation{endpoint: serviceEndpoint}, projectID, nil
 	}
 
 	none, noneExists := d.GetOk(resourceBlockServiceFabricNone)
@@ -181,7 +181,7 @@ func expandServiceEndpointServiceFabric(d *schema.ResourceData) (*serviceendpoin
 			Parameters: &parameters,
 			Scheme:     converter.String("None"),
 		}
-		return serviceEndpoint, projectID, nil
+		return &serviceEndpointWithValidation{endpoint: serviceEndpoint}, projectID, nil
 	}
 
 	return nil, nil, fmt.Errorf("One of %s or %s or %s blocks must be specified", resourceBlockServiceFabricAzureActiveDirectory, resourceBlockServiceFabricCertificate, resourceBlockServiceFabricNone)
@@ -255,20 +255,20 @@ func flattenServiceEndpointServiceFabricServerCertificateLookup(serviceEndpoint 
 }
 
 // Convert AzDO data structure to internal Terraform data structure
-func flattenServiceEndpointServiceFabric(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
-	doBaseFlattening(d, serviceEndpoint, projectID)
+func flattenServiceEndpointServiceFabric(d *schema.ResourceData, serviceEndpoint *serviceEndpointWithValidation, projectID *uuid.UUID) {
+	doBaseFlattening(d, serviceEndpoint.endpoint, projectID)
 
-	switch *serviceEndpoint.Authorization.Scheme {
+	switch *serviceEndpoint.endpoint.Authorization.Scheme {
 	case "Certificate":
-		certificate := flattenServiceFabricCertificate(d, serviceEndpoint)
+		certificate := flattenServiceFabricCertificate(d, serviceEndpoint.endpoint)
 		d.Set(resourceBlockServiceFabricCertificate, certificate)
 	case "UsernamePassword":
-		azureActiveDirectory := flattenServiceFabricAzureActiveDirectory(d, serviceEndpoint)
+		azureActiveDirectory := flattenServiceFabricAzureActiveDirectory(d, serviceEndpoint.endpoint)
 		d.Set(resourceBlockServiceFabricAzureActiveDirectory, azureActiveDirectory)
 	case "None":
-		none := flattenServiceFabricNone(serviceEndpoint)
+		none := flattenServiceFabricNone(serviceEndpoint.endpoint)
 		d.Set(resourceBlockServiceFabricNone, none)
 	}
 
-	d.Set("cluster_endpoint", (*serviceEndpoint.Url))
+	d.Set("cluster_endpoint", (*serviceEndpoint.endpoint.Url))
 }

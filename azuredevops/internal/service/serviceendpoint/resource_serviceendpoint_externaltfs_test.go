@@ -53,7 +53,7 @@ func TestServiceEndpointExternalTFS_ExpandFlatten_Roundtrip(t *testing.T) {
 	configureExternalTfsAuthPersonal(resourceData)
 	flattenServiceEndpointExternalTFS(
 		resourceData,
-		&externalTfsTestServiceEndpoint,
+		&serviceEndpointWithValidation{endpoint: &externalTfsTestServiceEndpoint},
 		externalTfsTestServiceEndpointProjectID,
 	)
 
@@ -73,7 +73,7 @@ func TestServiceEndpointExternalTFS_Create_DoesNotSwallowError(t *testing.T) {
 	configureExternalTfsAuthPersonal(resourceData)
 	flattenServiceEndpointExternalTFS(
 		resourceData,
-		&externalTfsTestServiceEndpoint,
+		&serviceEndpointWithValidation{endpoint: &externalTfsTestServiceEndpoint},
 		externalTfsTestServiceEndpointProjectID,
 	)
 
@@ -99,7 +99,7 @@ func TestServiceEndpointExternalTFS_Read_DoesNotSwallowError(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
 	flattenServiceEndpointExternalTFS(
 		resourceData,
-		&externalTfsTestServiceEndpoint,
+		&serviceEndpointWithValidation{endpoint: &externalTfsTestServiceEndpoint},
 		externalTfsTestServiceEndpointProjectID,
 	)
 
@@ -128,7 +128,7 @@ func TestServiceEndpointExternalTFS_Delete_DoesNotSwallowError(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
 	flattenServiceEndpointExternalTFS(
 		resourceData,
-		&externalTfsTestServiceEndpoint,
+		&serviceEndpointWithValidation{endpoint: &externalTfsTestServiceEndpoint},
 		externalTfsTestServiceEndpointProjectID,
 	)
 
@@ -161,7 +161,7 @@ func TestServiceEndpointExternalTFS_Update_DoesNotSwallowError(t *testing.T) {
 	configureExternalTfsAuthPersonal(resourceData)
 	flattenServiceEndpointExternalTFS(
 		resourceData,
-		&externalTfsTestServiceEndpoint,
+		&serviceEndpointWithValidation{endpoint: &externalTfsTestServiceEndpoint},
 		externalTfsTestServiceEndpointProjectID,
 	)
 

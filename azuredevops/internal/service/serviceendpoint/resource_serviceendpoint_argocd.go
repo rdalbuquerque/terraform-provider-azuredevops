@@ -84,7 +84,7 @@ func ResourceServiceEndpointArgoCD() *schema.Resource {
 }
 
 // Convert internal Terraform data structure to an AzDO data structure
-func expandServiceEndpointArgoCD(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *uuid.UUID, error) {
+func expandServiceEndpointArgoCD(d *schema.ResourceData) (*serviceEndpointWithValidation, *uuid.UUID, error) {
 	serviceEndpoint, projectID := doBaseExpansion(d)
 	serviceEndpoint.Type = converter.String("argocd")
 	serviceEndpoint.Url = converter.String(d.Get("url").(string))
@@ -116,31 +116,31 @@ func expandServiceEndpointArgoCD(d *schema.ResourceData) (*serviceendpoint.Servi
 		Scheme:     &authScheme,
 	}
 
-	return serviceEndpoint, projectID, nil
+	return &serviceEndpointWithValidation{endpoint: serviceEndpoint}, projectID, nil
 }
 
 // Convert AzDO data structure to internal Terraform data structure
 // Note that 'username', 'password', and 'apitoken' service connection fields
 // are all marked as confidential and therefore cannot be read from Azure DevOps
-func flattenServiceEndpointArgoCD(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
-	doBaseFlattening(d, serviceEndpoint, projectID)
+func flattenServiceEndpointArgoCD(d *schema.ResourceData, serviceEndpoint *serviceEndpointWithValidation, projectID *uuid.UUID) {
+	doBaseFlattening(d, serviceEndpoint.endpoint, projectID)
 
-	if strings.EqualFold(*serviceEndpoint.Authorization.Scheme, "UsernamePassword") {
+	if strings.EqualFold(*serviceEndpoint.endpoint.Authorization.Scheme, "UsernamePassword") {
 		if _, ok := d.GetOk("authentication_basic"); !ok {
 			auth := make(map[string]interface{})
 			auth["username"] = ""
 			auth["password"] = ""
 			d.Set("authentication_basic", []interface{}{auth})
 		}
-	} else if strings.EqualFold(*serviceEndpoint.Authorization.Scheme, "Token") {
+	} else if strings.EqualFold(*serviceEndpoint.endpoint.Authorization.Scheme, "Token") {
 		if _, ok := d.GetOk("authentication_token"); !ok {
 			auth := make(map[string]interface{})
 			auth["token"] = ""
 			d.Set("authentication_token", []interface{}{auth})
 		}
 	} else {
-		panic(fmt.Errorf("inconsistent authorization scheme. Expected: (Token, UsernamePassword)  , but got %s", *serviceEndpoint.Authorization.Scheme))
+		panic(fmt.Errorf("inconsistent authorization scheme. Expected: (Token, UsernamePassword)  , but got %s", *serviceEndpoint.endpoint.Authorization.Scheme))
 	}
 
-	d.Set("url", *serviceEndpoint.Url)
+	d.Set("url", *serviceEndpoint.endpoint.Url)
 }

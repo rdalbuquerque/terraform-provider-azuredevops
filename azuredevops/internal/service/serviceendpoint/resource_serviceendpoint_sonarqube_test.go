@@ -49,7 +49,7 @@ var sonarQubeTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 // verifies that the flatten/expand round trip yields the same service endpoint
 func TestServiceEndpointSonarQube_ExpandFlatten_Roundtrip(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, ResourceServiceEndpointSonarQube().Schema, nil)
-	flattenServiceEndpointSonarQube(resourceData, &sonarQubeTestServiceEndpoint, sonarQubeTestServiceEndpointProjectID)
+	flattenServiceEndpointSonarQube(resourceData, &serviceEndpointWithValidation{endpoint: &sonarQubeTestServiceEndpoint}, sonarQubeTestServiceEndpointProjectID)
 
 	serviceEndpointAfterRoundTrip, projectID, err := expandServiceEndpointSonarQube(resourceData)
 
@@ -65,7 +65,7 @@ func TestServiceEndpointSonarQube_Create_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceServiceEndpointSonarQube()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointSonarQube(resourceData, &sonarQubeTestServiceEndpoint, sonarQubeTestServiceEndpointProjectID)
+	flattenServiceEndpointSonarQube(resourceData, &serviceEndpointWithValidation{endpoint: &sonarQubeTestServiceEndpoint}, sonarQubeTestServiceEndpointProjectID)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -88,7 +88,7 @@ func TestServiceEndpointSonarQube_Read_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceServiceEndpointSonarQube()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointSonarQube(resourceData, &sonarQubeTestServiceEndpoint, sonarQubeTestServiceEndpointProjectID)
+	flattenServiceEndpointSonarQube(resourceData, &serviceEndpointWithValidation{endpoint: &sonarQubeTestServiceEndpoint}, sonarQubeTestServiceEndpointProjectID)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -114,7 +114,7 @@ func TestServiceEndpointSonarQube_Delete_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceServiceEndpointSonarQube()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointSonarQube(resourceData, &sonarQubeTestServiceEndpoint, sonarQubeTestServiceEndpointProjectID)
+	flattenServiceEndpointSonarQube(resourceData, &serviceEndpointWithValidation{endpoint: &sonarQubeTestServiceEndpoint}, sonarQubeTestServiceEndpointProjectID)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -142,7 +142,7 @@ func TestServiceEndpointSonarQube_Update_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceServiceEndpointSonarQube()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointSonarQube(resourceData, &sonarQubeTestServiceEndpoint, sonarQubeTestServiceEndpointProjectID)
+	flattenServiceEndpointSonarQube(resourceData, &serviceEndpointWithValidation{endpoint: &sonarQubeTestServiceEndpoint}, sonarQubeTestServiceEndpointProjectID)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}

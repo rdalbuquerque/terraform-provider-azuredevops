@@ -45,7 +45,7 @@ func ResourceServiceEndpointGcp() *schema.Resource {
 }
 
 // Convert internal Terraform data structure to an AzDO data structure
-func expandServiceEndpointGcp(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *uuid.UUID, error) {
+func expandServiceEndpointGcp(d *schema.ResourceData) (*serviceEndpointWithValidation, *uuid.UUID, error) {
 	serviceEndpoint, projectID := doBaseExpansion(d)
 	serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
 		Parameters: &map[string]string{
@@ -61,16 +61,16 @@ func expandServiceEndpointGcp(d *schema.ResourceData) (*serviceendpoint.ServiceE
 	}
 	serviceEndpoint.Type = converter.String("GoogleCloudServiceEndpoint")
 	serviceEndpoint.Url = converter.String("https://www.googleapis.com/")
-	return serviceEndpoint, projectID, nil
+	return &serviceEndpointWithValidation{endpoint: serviceEndpoint}, projectID, nil
 }
 
 // Convert AzDO data structure to internal Terraform data structure
-func flattenServiceEndpointGcp(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
-	doBaseFlattening(d, serviceEndpoint, projectID)
+func flattenServiceEndpointGcp(d *schema.ResourceData, serviceEndpoint *serviceEndpointWithValidation, projectID *uuid.UUID) {
+	doBaseFlattening(d, serviceEndpoint.endpoint, projectID)
 
 	d.Set("private_key", d.Get("private_key").(string))
-	d.Set("client_email", (*serviceEndpoint.Authorization.Parameters)["Issuer"])
-	d.Set("token_uri", (*serviceEndpoint.Authorization.Parameters)["Audience"])
-	d.Set("scope", (*serviceEndpoint.Authorization.Parameters)["Scope"])
-	d.Set("gcp_project_id", (*serviceEndpoint.Data)["project"])
+	d.Set("client_email", (*serviceEndpoint.endpoint.Authorization.Parameters)["Issuer"])
+	d.Set("token_uri", (*serviceEndpoint.endpoint.Authorization.Parameters)["Audience"])
+	d.Set("scope", (*serviceEndpoint.endpoint.Authorization.Parameters)["Scope"])
+	d.Set("gcp_project_id", (*serviceEndpoint.endpoint.Data)["project"])
 }

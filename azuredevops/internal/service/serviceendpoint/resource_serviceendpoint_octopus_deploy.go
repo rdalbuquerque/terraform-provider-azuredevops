@@ -31,7 +31,7 @@ func ResourceServiceEndpointOctopusDeploy() *schema.Resource {
 	return r
 }
 
-func expandServiceEndpointOctopusDeploy(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *uuid.UUID, error) {
+func expandServiceEndpointOctopusDeploy(d *schema.ResourceData) (*serviceEndpointWithValidation, *uuid.UUID, error) {
 	serviceEndpoint, projectID := doBaseExpansion(d)
 	serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
 		Parameters: &map[string]string{
@@ -45,16 +45,16 @@ func expandServiceEndpointOctopusDeploy(d *schema.ResourceData) (*serviceendpoin
 	}
 	serviceEndpoint.Type = converter.String("OctopusEndpoint")
 	serviceEndpoint.Url = converter.String(d.Get("url").(string))
-	return serviceEndpoint, projectID, nil
+	return &serviceEndpointWithValidation{endpoint: serviceEndpoint}, projectID, nil
 }
 
-func flattenServiceEndpointOctopusDeploy(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
-	doBaseFlattening(d, serviceEndpoint, projectID)
-	d.Set("url", *serviceEndpoint.Url)
+func flattenServiceEndpointOctopusDeploy(d *schema.ResourceData, serviceEndpoint *serviceEndpointWithValidation, projectID *uuid.UUID) {
+	doBaseFlattening(d, serviceEndpoint.endpoint, projectID)
+	d.Set("url", *serviceEndpoint.endpoint.Url)
 
-	ignoreSslErrors, err := strconv.ParseBool((*serviceEndpoint.Data)["ignoreSslErrors"])
+	ignoreSslErrors, err := strconv.ParseBool((*serviceEndpoint.endpoint.Data)["ignoreSslErrors"])
 	if err != nil {
-		panic(fmt.Errorf(" Failed to parse OctopusDeploy.ignore_ssl_error.(Project: %s), (service endpoint:%s) ,Error: %+v", *serviceEndpoint.Name, projectID, err))
+		panic(fmt.Errorf(" Failed to parse OctopusDeploy.ignore_ssl_error.(Project: %s), (service endpoint:%s) ,Error: %+v", *serviceEndpoint.endpoint.Name, projectID, err))
 	}
 	d.Set("ignore_ssl_error", ignoreSslErrors)
 }

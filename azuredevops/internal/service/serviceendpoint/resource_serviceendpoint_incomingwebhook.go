@@ -33,7 +33,7 @@ func ResourceServiceEndpointIncomingWebhook() *schema.Resource {
 }
 
 // Convert internal Terraform data structure to an AzDO data structure
-func expandServiceEndpointIncomingWebhook(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *uuid.UUID, error) {
+func expandServiceEndpointIncomingWebhook(d *schema.ResourceData) (*serviceEndpointWithValidation, *uuid.UUID, error) {
 	serviceEndpoint, projectID := doBaseExpansion(d)
 	serviceEndpoint.Url = converter.String("https://dev.azure.com")
 	serviceEndpoint.Type = converter.String("incomingwebhook")
@@ -45,13 +45,13 @@ func expandServiceEndpointIncomingWebhook(d *schema.ResourceData) (*serviceendpo
 		},
 		Scheme: converter.String("None"),
 	}
-	return serviceEndpoint, projectID, nil
+	return &serviceEndpointWithValidation{endpoint: serviceEndpoint}, projectID, nil
 }
 
 // Convert AzDO data structure to internal Terraform data structure
-func flattenServiceEndpointIncomingWebhook(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
-	doBaseFlattening(d, serviceEndpoint, projectID)
-	d.Set("webhook_name", (*serviceEndpoint.Authorization.Parameters)["webhookname"])
-	d.Set("http_header", (*serviceEndpoint.Authorization.Parameters)["header"])
+func flattenServiceEndpointIncomingWebhook(d *schema.ResourceData, serviceEndpoint *serviceEndpointWithValidation, projectID *uuid.UUID) {
+	doBaseFlattening(d, serviceEndpoint.endpoint, projectID)
+	d.Set("webhook_name", (*serviceEndpoint.endpoint.Authorization.Parameters)["webhookname"])
+	d.Set("http_header", (*serviceEndpoint.endpoint.Authorization.Parameters)["header"])
 	// secret value won't be returned by service and should not be overwritten
 }

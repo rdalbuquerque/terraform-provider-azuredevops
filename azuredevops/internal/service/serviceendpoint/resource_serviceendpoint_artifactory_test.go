@@ -79,7 +79,7 @@ func testServiceEndpointArtifactory_ExpandFlatten_Roundtrip(t *testing.T, ep *se
 	for _, ep := range []*serviceendpoint.ServiceEndpoint{ep, ep} {
 
 		resourceData := schema.TestResourceDataRaw(t, ResourceServiceEndpointArtifactory().Schema, nil)
-		flattenServiceEndpointArtifactory(resourceData, ep, id)
+		flattenServiceEndpointArtifactory(resourceData, &serviceEndpointWithValidation{endpoint: ep}, id)
 
 		serviceEndpointAfterRoundTrip, projectID, err := expandServiceEndpointArtifactory(resourceData)
 		require.Nil(t, err)
@@ -103,7 +103,7 @@ func testServiceEndpointArtifactory_Create_DoesNotSwallowError(t *testing.T, ep 
 
 	r := ResourceServiceEndpointArtifactory()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointArtifactory(resourceData, ep, id)
+	flattenServiceEndpointArtifactory(resourceData, &serviceEndpointWithValidation{endpoint: ep}, id)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -132,7 +132,7 @@ func testServiceEndpointArtifactory_Read_DoesNotSwallowError(t *testing.T, ep *s
 
 	r := ResourceServiceEndpointArtifactory()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointArtifactory(resourceData, ep, id)
+	flattenServiceEndpointArtifactory(resourceData, &serviceEndpointWithValidation{endpoint: ep}, id)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -164,7 +164,7 @@ func testServiceEndpointArtifactory_Delete_DoesNotSwallowError(t *testing.T, ep 
 
 	r := ResourceServiceEndpointArtifactory()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointArtifactory(resourceData, ep, id)
+	flattenServiceEndpointArtifactory(resourceData, &serviceEndpointWithValidation{endpoint: ep}, id)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -198,7 +198,7 @@ func testServiceEndpointArtifactory_Update_DoesNotSwallowError(t *testing.T, ep 
 
 	r := ResourceServiceEndpointArtifactory()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointArtifactory(resourceData, ep, id)
+	flattenServiceEndpointArtifactory(resourceData, &serviceEndpointWithValidation{endpoint: ep}, id)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}

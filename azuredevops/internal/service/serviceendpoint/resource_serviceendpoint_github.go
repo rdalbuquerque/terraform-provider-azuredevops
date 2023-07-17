@@ -61,7 +61,7 @@ func ResourceServiceEndpointGitHub() *schema.Resource {
 }
 
 // Convert internal Terraform data structure to an AzDO data structure
-func expandServiceEndpointGitHub(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *uuid.UUID, error) {
+func expandServiceEndpointGitHub(d *schema.ResourceData) (*serviceEndpointWithValidation, *uuid.UUID, error) {
 	serviceEndpoint, projectID := doBaseExpansion(d)
 	scheme := "InstallationToken"
 
@@ -84,7 +84,7 @@ func expandServiceEndpointGitHub(d *schema.ResourceData) (*serviceendpoint.Servi
 	serviceEndpoint.Type = converter.String("github")
 	serviceEndpoint.Url = converter.String("https://github.com")
 
-	return serviceEndpoint, projectID, nil
+	return &serviceEndpointWithValidation{endpoint: serviceEndpoint}, projectID, nil
 }
 
 func expandAuthPersonalSetGithub(d *schema.Set) map[string]string {
@@ -103,16 +103,16 @@ func expandAuthOauthSet(d *schema.Set) map[string]string {
 }
 
 // Convert AzDO data structure to internal Terraform data structure
-func flattenServiceEndpointGitHub(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
-	doBaseFlattening(d, serviceEndpoint, projectID)
-	if strings.EqualFold(*serviceEndpoint.Authorization.Scheme, "OAuth") {
+func flattenServiceEndpointGitHub(d *schema.ResourceData, serviceEndpoint *serviceEndpointWithValidation, projectID *uuid.UUID) {
+	doBaseFlattening(d, serviceEndpoint.endpoint, projectID)
+	if strings.EqualFold(*serviceEndpoint.endpoint.Authorization.Scheme, "OAuth") {
 		d.Set("auth_oauth", &[]map[string]interface{}{
 			{
-				"oauth_configuration_id": (*serviceEndpoint.Authorization.Parameters)["ConfigurationId"],
+				"oauth_configuration_id": (*serviceEndpoint.endpoint.Authorization.Parameters)["ConfigurationId"],
 			},
 		})
 	}
-	if strings.EqualFold(*serviceEndpoint.Authorization.Scheme, "Token") {
+	if strings.EqualFold(*serviceEndpoint.endpoint.Authorization.Scheme, "Token") {
 		authPersonalSet := d.Get("auth_personal").(*schema.Set).List()
 		authPersonal := flattenAuthPerson(d, authPersonalSet)
 		if authPersonal != nil {

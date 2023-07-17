@@ -48,17 +48,17 @@ func ResourceServiceEndpointGitHubEnterprise() *schema.Resource {
 	return r
 }
 
-func flattenServiceEndpointGitHubEnterprise(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
-	doBaseFlattening(d, serviceEndpoint, projectID)
+func flattenServiceEndpointGitHubEnterprise(d *schema.ResourceData, serviceEndpoint *serviceEndpointWithValidation, projectID *uuid.UUID) {
+	doBaseFlattening(d, serviceEndpoint.endpoint, projectID)
 
-	if strings.EqualFold(*serviceEndpoint.Authorization.Scheme, "Token") {
+	if strings.EqualFold(*serviceEndpoint.endpoint.Authorization.Scheme, "Token") {
 		authPersonalSet := d.Get("auth_personal").(*schema.Set).List()
 		authPersonal := flattenAuthPersonGithubEnterprise(d, authPersonalSet)
 		if authPersonal != nil {
 			d.Set("auth_personal", authPersonal)
 		}
 	}
-	d.Set("url", *serviceEndpoint.Url)
+	d.Set("url", *serviceEndpoint.endpoint.Url)
 }
 
 func flattenAuthPersonGithubEnterprise(d *schema.ResourceData, authPersonalSet []interface{}) []interface{} {
@@ -73,7 +73,7 @@ func flattenAuthPersonGithubEnterprise(d *schema.ResourceData, authPersonalSet [
 }
 
 // Convert internal Terraform data structure to an AzDO data structure
-func expandServiceEndpointGitHubEnterprise(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *uuid.UUID, error) {
+func expandServiceEndpointGitHubEnterprise(d *schema.ResourceData) (*serviceEndpointWithValidation, *uuid.UUID, error) {
 	serviceEndpoint, projectID := doBaseExpansion(d)
 
 	serviceEndpoint.Type = converter.String("githubenterprise")
@@ -94,7 +94,7 @@ func expandServiceEndpointGitHubEnterprise(d *schema.ResourceData) (*serviceendp
 		Scheme:     &scheme,
 	}
 
-	return serviceEndpoint, projectID, nil
+	return &serviceEndpointWithValidation{endpoint: serviceEndpoint}, projectID, nil
 }
 
 func expandAuthPersonalSetGithubEnterprise(d *schema.Set) map[string]string {

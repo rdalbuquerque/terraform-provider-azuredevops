@@ -43,7 +43,7 @@ func ResourceServiceEndpointExternalTFS() *schema.Resource {
 	return r
 }
 
-func expandServiceEndpointExternalTFS(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *uuid.UUID, error) {
+func expandServiceEndpointExternalTFS(d *schema.ResourceData) (*serviceEndpointWithValidation, *uuid.UUID, error) {
 	serviceEndpoint, projectID := doBaseExpansion(d)
 	serviceEndpoint.Type = converter.String("externaltfs")
 	serviceEndpoint.Url = converter.String(d.Get("connection_url").(string))
@@ -60,7 +60,7 @@ func expandServiceEndpointExternalTFS(d *schema.ResourceData) (*serviceendpoint.
 		Parameters: &parameters,
 		Scheme:     &scheme,
 	}
-	return serviceEndpoint, projectID, nil
+	return &serviceEndpointWithValidation{endpoint: serviceEndpoint}, projectID, nil
 }
 
 func expandAuthPersonalSetExternalTFS(d *schema.Set) map[string]string {
@@ -71,8 +71,8 @@ func expandAuthPersonalSetExternalTFS(d *schema.Set) map[string]string {
 	return authPerson
 }
 
-func flattenServiceEndpointExternalTFS(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
-	doBaseFlattening(d, serviceEndpoint, projectID)
+func flattenServiceEndpointExternalTFS(d *schema.ResourceData, serviceEndpoint *serviceEndpointWithValidation, projectID *uuid.UUID) {
+	doBaseFlattening(d, serviceEndpoint.endpoint, projectID)
 
-	d.Set("connection_url", *serviceEndpoint.Url)
+	d.Set("connection_url", *serviceEndpoint.endpoint.Url)
 }

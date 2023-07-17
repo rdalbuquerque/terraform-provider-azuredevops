@@ -54,7 +54,7 @@ func ResourceServiceEndpointDockerRegistry() *schema.Resource {
 }
 
 // Convert internal Terraform data structure to an AzDO data structure
-func expandServiceEndpointDockerRegistry(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *uuid.UUID, error) {
+func expandServiceEndpointDockerRegistry(d *schema.ResourceData) (*serviceEndpointWithValidation, *uuid.UUID, error) {
 	serviceEndpoint, projectID := doBaseExpansion(d)
 	serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
 		Parameters: &map[string]string{
@@ -70,16 +70,16 @@ func expandServiceEndpointDockerRegistry(d *schema.ResourceData) (*serviceendpoi
 	}
 	serviceEndpoint.Type = converter.String("dockerregistry")
 	serviceEndpoint.Url = converter.String("https://hub.docker.com/") // DevOps UI sets hub.docker.com for both DockerHub and Others types
-	return serviceEndpoint, projectID, nil
+	return &serviceEndpointWithValidation{endpoint: serviceEndpoint}, projectID, nil
 }
 
 // Convert AzDO data structure to internal Terraform data structure
-func flattenServiceEndpointDockerRegistry(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
-	doBaseFlattening(d, serviceEndpoint, projectID)
-	d.Set("docker_registry", (*serviceEndpoint.Authorization.Parameters)["registry"])
-	d.Set("docker_email", (*serviceEndpoint.Authorization.Parameters)["email"])
-	d.Set("docker_username", (*serviceEndpoint.Authorization.Parameters)["username"])
+func flattenServiceEndpointDockerRegistry(d *schema.ResourceData, serviceEndpoint *serviceEndpointWithValidation, projectID *uuid.UUID) {
+	doBaseFlattening(d, serviceEndpoint.endpoint, projectID)
+	d.Set("docker_registry", (*serviceEndpoint.endpoint.Authorization.Parameters)["registry"])
+	d.Set("docker_email", (*serviceEndpoint.endpoint.Authorization.Parameters)["email"])
+	d.Set("docker_username", (*serviceEndpoint.endpoint.Authorization.Parameters)["username"])
 	tfhelper.HelpFlattenSecret(d, "docker_password")
-	d.Set("docker_password", (*serviceEndpoint.Authorization.Parameters)["password"])
-	d.Set("registry_type", (*serviceEndpoint.Data)["registrytype"])
+	d.Set("docker_password", (*serviceEndpoint.endpoint.Authorization.Parameters)["password"])
+	d.Set("registry_type", (*serviceEndpoint.endpoint.Data)["registrytype"])
 }

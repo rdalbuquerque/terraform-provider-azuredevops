@@ -32,7 +32,7 @@ func ResourceServiceEndpointRunPipeline() *schema.Resource {
 }
 
 // Convert internal Terraform data structure to an AzDO data structure:
-func expandServiceEndpointRunPipeline(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *uuid.UUID, error) {
+func expandServiceEndpointRunPipeline(d *schema.ResourceData) (*serviceEndpointWithValidation, *uuid.UUID, error) {
 	serviceEndpoint, projectID := doBaseExpansion(d)
 	serviceEndpoint.Type = converter.String("azdoapi")
 
@@ -52,7 +52,7 @@ func expandServiceEndpointRunPipeline(d *schema.ResourceData) (*serviceendpoint.
 	releaseUrl := fmt.Sprint("https://vsrm.dev.azure.com/", org)
 	data["releaseUrl"] = releaseUrl
 	serviceEndpoint.Data = &data
-	return serviceEndpoint, projectID, nil
+	return &serviceEndpointWithValidation{endpoint: serviceEndpoint}, projectID, nil
 }
 
 func rpExpandAuthPersonalSet(d *schema.Set) map[string]string {
@@ -85,8 +85,8 @@ func rpPersonalAccessTokenField() *schema.Resource {
 }
 
 // Convert AzDO data structure to internal Terraform data structure
-func flattenServiceEndpointRunPipeline(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
-	doBaseFlattening(d, serviceEndpoint, projectID)
+func flattenServiceEndpointRunPipeline(d *schema.ResourceData, serviceEndpoint *serviceEndpointWithValidation, projectID *uuid.UUID) {
+	doBaseFlattening(d, serviceEndpoint.endpoint, projectID)
 	authPersonalSet := d.Get("auth_personal").(*schema.Set).List()
 	authPersonal := rpFlattenAuthPersonal(d, authPersonalSet)
 	if authPersonal != nil {

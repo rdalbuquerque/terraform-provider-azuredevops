@@ -18,6 +18,12 @@ func ResourceServiceEndpointAzureRM() *schema.Resource {
 	r := genBaseServiceEndpointResource(flattenServiceEndpointAzureRM, expandServiceEndpointAzureRM)
 	makeUnprotectedSchema(r, "azurerm_spn_tenantid", "ARM_TENANT_ID", "The service principal tenant id which should be used.")
 
+	r.Schema["validate"] = &schema.Schema{
+		Type:        schema.TypeBool,
+		Optional:    true,
+		Description: "Whether or not to validation the serviceendpoint on create/update operations",
+	}
+
 	r.Schema["resource_group"] = &schema.Schema{
 		Type:          schema.TypeString,
 		Optional:      true,
@@ -79,7 +85,7 @@ func ResourceServiceEndpointAzureRM() *schema.Resource {
 }
 
 // Convert internal Terraform data structure to an AzDO data structure
-func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *uuid.UUID, error) {
+func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceEndpointWithValidation, *uuid.UUID, error) {
 	serviceEndpoint, projectID := doBaseExpansion(d)
 
 	// Validate one of either subscriptionId or managementGroupId is set
@@ -156,7 +162,7 @@ func expandServiceEndpointAzureRM(d *schema.ResourceData) (*serviceendpoint.Serv
 
 	serviceEndpoint.Type = converter.String("azurerm")
 	serviceEndpoint.Url = converter.String(endpointUrl)
-	return serviceEndpoint, projectID, nil
+	return &serviceEndpointWithValidation{endpoint: serviceEndpoint, validate: d.Get("validate").(bool)}, projectID, nil
 }
 
 func flattenCredentials(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, hashKey string, hashValue string) interface{} {
@@ -169,13 +175,15 @@ func flattenCredentials(d *schema.ResourceData, serviceEndpoint *serviceendpoint
 }
 
 // Convert AzDO data structure to internal Terraform data structure
-func flattenServiceEndpointAzureRM(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
-	doBaseFlattening(d, serviceEndpoint, projectID)
-	scope := (*serviceEndpoint.Authorization.Parameters)["scope"]
+func flattenServiceEndpointAzureRM(d *schema.ResourceData, serviceEndpoint *serviceEndpointWithValidation, projectID *uuid.UUID) {
+	doBaseFlattening(d, serviceEndpoint.endpoint, projectID)
+	d.Set("validate", serviceEndpoint.validate)
 
-	if (*serviceEndpoint.Data)["creationMode"] == "Manual" {
+	scope := (*serviceEndpoint.endpoint.Authorization.Parameters)["scope"]
+
+	if (*serviceEndpoint.endpoint.Data)["creationMode"] == "Manual" {
 		newHash, hashKey := tfhelper.HelpFlattenSecretNested(d, "credentials", d.Get("credentials.0").(map[string]interface{}), "serviceprincipalkey")
-		credentials := flattenCredentials(d, serviceEndpoint, hashKey, newHash)
+		credentials := flattenCredentials(d, serviceEndpoint.endpoint, hashKey, newHash)
 		d.Set("credentials", credentials)
 	}
 
@@ -184,16 +192,16 @@ func flattenServiceEndpointAzureRM(d *schema.ResourceData, serviceEndpoint *serv
 		d.Set("resource_group", s[4])
 	}
 
-	d.Set("azurerm_spn_tenantid", (*serviceEndpoint.Authorization.Parameters)["tenantid"])
+	d.Set("azurerm_spn_tenantid", (*serviceEndpoint.endpoint.Authorization.Parameters)["tenantid"])
 
-	if _, ok := (*serviceEndpoint.Data)["managementGroupId"]; ok {
-		d.Set("azurerm_management_group_id", (*serviceEndpoint.Data)["managementGroupId"])
-		d.Set("azurerm_management_group_name", (*serviceEndpoint.Data)["managementGroupName"])
+	if _, ok := (*serviceEndpoint.endpoint.Data)["managementGroupId"]; ok {
+		d.Set("azurerm_management_group_id", (*serviceEndpoint.endpoint.Data)["managementGroupId"])
+		d.Set("azurerm_management_group_name", (*serviceEndpoint.endpoint.Data)["managementGroupName"])
 	}
 
-	if _, ok := (*serviceEndpoint.Data)["subscriptionId"]; ok {
-		d.Set("azurerm_subscription_id", (*serviceEndpoint.Data)["subscriptionId"])
-		d.Set("azurerm_subscription_name", (*serviceEndpoint.Data)["subscriptionName"])
+	if _, ok := (*serviceEndpoint.endpoint.Data)["subscriptionId"]; ok {
+		d.Set("azurerm_subscription_id", (*serviceEndpoint.endpoint.Data)["subscriptionId"])
+		d.Set("azurerm_subscription_name", (*serviceEndpoint.endpoint.Data)["subscriptionName"])
 	}
 }
 

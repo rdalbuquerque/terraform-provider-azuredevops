@@ -59,7 +59,7 @@ func ResourceServiceEndpointAws() *schema.Resource {
 }
 
 // Convert internal Terraform data structure to an AzDO data structure
-func expandServiceEndpointAws(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *uuid.UUID, error) {
+func expandServiceEndpointAws(d *schema.ResourceData) (*serviceEndpointWithValidation, *uuid.UUID, error) {
 	serviceEndpoint, projectID := doBaseExpansion(d)
 	serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
 		Parameters: &map[string]string{
@@ -74,20 +74,20 @@ func expandServiceEndpointAws(d *schema.ResourceData) (*serviceendpoint.ServiceE
 	}
 	serviceEndpoint.Type = converter.String("aws")
 	serviceEndpoint.Url = converter.String("https://aws.amazon.com/")
-	return serviceEndpoint, projectID, nil
+	return &serviceEndpointWithValidation{endpoint: serviceEndpoint}, projectID, nil
 }
 
 // Convert AzDO data structure to internal Terraform data structure
-func flattenServiceEndpointAws(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
-	doBaseFlattening(d, serviceEndpoint, projectID)
+func flattenServiceEndpointAws(d *schema.ResourceData, serviceEndpoint *serviceEndpointWithValidation, projectID *uuid.UUID) {
+	doBaseFlattening(d, serviceEndpoint.endpoint, projectID)
 
 	tfhelper.HelpFlattenSecret(d, "secret_access_key")
 	tfhelper.HelpFlattenSecret(d, "session_token")
 
-	d.Set("access_key_id", (*serviceEndpoint.Authorization.Parameters)["username"])
-	d.Set("secret_access_key", (*serviceEndpoint.Authorization.Parameters)["password"])
-	d.Set("session_token", (*serviceEndpoint.Authorization.Parameters)["sessionToken"])
-	d.Set("role_to_assume", (*serviceEndpoint.Authorization.Parameters)["assumeRoleArn"])
-	d.Set("role_session_name", (*serviceEndpoint.Authorization.Parameters)["roleSessionName"])
-	d.Set("external_id", (*serviceEndpoint.Authorization.Parameters)["externalId"])
+	d.Set("access_key_id", (*serviceEndpoint.endpoint.Authorization.Parameters)["username"])
+	d.Set("secret_access_key", (*serviceEndpoint.endpoint.Authorization.Parameters)["password"])
+	d.Set("session_token", (*serviceEndpoint.endpoint.Authorization.Parameters)["sessionToken"])
+	d.Set("role_to_assume", (*serviceEndpoint.endpoint.Authorization.Parameters)["assumeRoleArn"])
+	d.Set("role_session_name", (*serviceEndpoint.endpoint.Authorization.Parameters)["roleSessionName"])
+	d.Set("external_id", (*serviceEndpoint.endpoint.Authorization.Parameters)["externalId"])
 }

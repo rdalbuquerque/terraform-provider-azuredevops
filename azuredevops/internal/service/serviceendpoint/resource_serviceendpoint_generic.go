@@ -37,7 +37,7 @@ func ResourceServiceEndpointGeneric() *schema.Resource {
 	return r
 }
 
-func expandServiceEndpointGeneric(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *uuid.UUID, error) {
+func expandServiceEndpointGeneric(d *schema.ResourceData) (*serviceEndpointWithValidation, *uuid.UUID, error) {
 	serviceEndpoint, projectID := doBaseExpansion(d)
 	serviceEndpoint.Type = converter.String("generic")
 	serviceEndpoint.Url = converter.String(d.Get("server_url").(string))
@@ -48,12 +48,12 @@ func expandServiceEndpointGeneric(d *schema.ResourceData) (*serviceendpoint.Serv
 		},
 		Scheme: converter.String("UsernamePassword"),
 	}
-	return serviceEndpoint, projectID, nil
+	return &serviceEndpointWithValidation{endpoint: serviceEndpoint}, projectID, nil
 }
 
-func flattenServiceEndpointGeneric(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
-	doBaseFlattening(d, serviceEndpoint, projectID)
-	d.Set("server_url", *serviceEndpoint.Url)
-	d.Set("username", (*serviceEndpoint.Authorization.Parameters)["username"])
+func flattenServiceEndpointGeneric(d *schema.ResourceData, serviceEndpoint *serviceEndpointWithValidation, projectID *uuid.UUID) {
+	doBaseFlattening(d, serviceEndpoint.endpoint, projectID)
+	d.Set("server_url", *serviceEndpoint.endpoint.Url)
+	d.Set("username", (*serviceEndpoint.endpoint.Authorization.Parameters)["username"])
 	tfhelper.HelpFlattenSecret(d, "password")
 }

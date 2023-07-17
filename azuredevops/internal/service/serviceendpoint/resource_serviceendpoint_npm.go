@@ -30,7 +30,7 @@ func ResourceServiceEndpointNpm() *schema.Resource {
 }
 
 // Convert internal Terraform data structure to an AzDO data structure
-func expandServiceEndpointNpm(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *uuid.UUID, error) {
+func expandServiceEndpointNpm(d *schema.ResourceData) (*serviceEndpointWithValidation, *uuid.UUID, error) {
 	serviceEndpoint, projectID := doBaseExpansion(d)
 	serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
 		Parameters: &map[string]string{
@@ -40,13 +40,13 @@ func expandServiceEndpointNpm(d *schema.ResourceData) (*serviceendpoint.ServiceE
 	}
 	serviceEndpoint.Type = converter.String("externalnpmregistry")
 	serviceEndpoint.Url = converter.String(d.Get("url").(string))
-	return serviceEndpoint, projectID, nil
+	return &serviceEndpointWithValidation{endpoint: serviceEndpoint}, projectID, nil
 }
 
 // Convert AzDO data structure to internal Terraform data structure
-func flattenServiceEndpointNpm(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
-	doBaseFlattening(d, serviceEndpoint, projectID)
+func flattenServiceEndpointNpm(d *schema.ResourceData, serviceEndpoint *serviceEndpointWithValidation, projectID *uuid.UUID) {
+	doBaseFlattening(d, serviceEndpoint.endpoint, projectID)
 
-	d.Set("url", *serviceEndpoint.Url)
+	d.Set("url", *serviceEndpoint.endpoint.Url)
 	d.Set("access_token", d.Get("access_token").(string))
 }

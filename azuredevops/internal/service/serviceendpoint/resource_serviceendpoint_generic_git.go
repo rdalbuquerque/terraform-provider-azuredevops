@@ -45,7 +45,7 @@ func ResourceServiceEndpointGenericGit() *schema.Resource {
 	return r
 }
 
-func expandServiceEndpointGenericGit(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *uuid.UUID, error) {
+func expandServiceEndpointGenericGit(d *schema.ResourceData) (*serviceEndpointWithValidation, *uuid.UUID, error) {
 	serviceEndpoint, projectID := doBaseExpansion(d)
 	serviceEndpoint.Type = converter.String("git")
 	serviceEndpoint.Url = converter.String(d.Get("repository_url").(string))
@@ -59,16 +59,16 @@ func expandServiceEndpointGenericGit(d *schema.ResourceData) (*serviceendpoint.S
 		},
 		Scheme: converter.String("UsernamePassword"),
 	}
-	return serviceEndpoint, projectID, nil
+	return &serviceEndpointWithValidation{endpoint: serviceEndpoint}, projectID, nil
 }
 
-func flattenServiceEndpointGenericGit(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
-	doBaseFlattening(d, serviceEndpoint, projectID)
-	d.Set("repository_url", *serviceEndpoint.Url)
-	if v, err := strconv.ParseBool((*serviceEndpoint.Data)["accessExternalGitServer"]); err != nil {
+func flattenServiceEndpointGenericGit(d *schema.ResourceData, serviceEndpoint *serviceEndpointWithValidation, projectID *uuid.UUID) {
+	doBaseFlattening(d, serviceEndpoint.endpoint, projectID)
+	d.Set("repository_url", *serviceEndpoint.endpoint.Url)
+	if v, err := strconv.ParseBool((*serviceEndpoint.endpoint.Data)["accessExternalGitServer"]); err != nil {
 		d.Set("enable_pipelines_access", v)
 	}
-	d.Set("username", (*serviceEndpoint.Authorization.Parameters)["username"])
+	d.Set("username", (*serviceEndpoint.endpoint.Authorization.Parameters)["username"])
 	tfhelper.HelpFlattenSecret(d, "password")
-	d.Set("password", (*serviceEndpoint.Authorization.Parameters)["password"])
+	d.Set("password", (*serviceEndpoint.endpoint.Authorization.Parameters)["password"])
 }

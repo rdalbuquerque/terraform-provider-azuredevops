@@ -51,7 +51,7 @@ var incomingWebhookTestServiceEndpoint = serviceendpoint.ServiceEndpoint{
 // verifies that the flatten/expand round trip yields the same service endpoint
 func TestServiceEndpointIncomingWebhook_ExpandFlatten_Roundtrip(t *testing.T) {
 	resourceData := schema.TestResourceDataRaw(t, ResourceServiceEndpointIncomingWebhook().Schema, nil)
-	flattenServiceEndpointIncomingWebhook(resourceData, &incomingWebhookTestServiceEndpoint, incomingWebhookTestServiceEndpointProjectID)
+	flattenServiceEndpointIncomingWebhook(resourceData, &serviceEndpointWithValidation{endpoint: &incomingWebhookTestServiceEndpoint}, incomingWebhookTestServiceEndpointProjectID)
 
 	serviceEndpointAfterRoundTrip, projectID, err := expandServiceEndpointIncomingWebhook(resourceData)
 
@@ -67,7 +67,7 @@ func TestServiceEndpointIncomingWebhook_Create_DoesNotSwallowError(t *testing.T)
 
 	r := ResourceServiceEndpointIncomingWebhook()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointIncomingWebhook(resourceData, &incomingWebhookTestServiceEndpoint, incomingWebhookTestServiceEndpointProjectID)
+	flattenServiceEndpointIncomingWebhook(resourceData, &serviceEndpointWithValidation{endpoint: &incomingWebhookTestServiceEndpoint}, incomingWebhookTestServiceEndpointProjectID)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -90,7 +90,7 @@ func TestServiceEndpointIncomingWebhook_Read_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceServiceEndpointIncomingWebhook()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointIncomingWebhook(resourceData, &incomingWebhookTestServiceEndpoint, incomingWebhookTestServiceEndpointProjectID)
+	flattenServiceEndpointIncomingWebhook(resourceData, &serviceEndpointWithValidation{endpoint: &incomingWebhookTestServiceEndpoint}, incomingWebhookTestServiceEndpointProjectID)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -116,7 +116,7 @@ func TestServiceEndpointIncomingWebhook_Delete_DoesNotSwallowError(t *testing.T)
 
 	r := ResourceServiceEndpointIncomingWebhook()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointIncomingWebhook(resourceData, &incomingWebhookTestServiceEndpoint, incomingWebhookTestServiceEndpointProjectID)
+	flattenServiceEndpointIncomingWebhook(resourceData, &serviceEndpointWithValidation{endpoint: &incomingWebhookTestServiceEndpoint}, incomingWebhookTestServiceEndpointProjectID)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -144,7 +144,7 @@ func TestServiceEndpointIncomingWebhook_Update_DoesNotSwallowError(t *testing.T)
 
 	r := ResourceServiceEndpointIncomingWebhook()
 	resourceData := schema.TestResourceDataRaw(t, r.Schema, nil)
-	flattenServiceEndpointIncomingWebhook(resourceData, &incomingWebhookTestServiceEndpoint, incomingWebhookTestServiceEndpointProjectID)
+	flattenServiceEndpointIncomingWebhook(resourceData, &serviceEndpointWithValidation{endpoint: &incomingWebhookTestServiceEndpoint}, incomingWebhookTestServiceEndpointProjectID)
 
 	buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 	clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}

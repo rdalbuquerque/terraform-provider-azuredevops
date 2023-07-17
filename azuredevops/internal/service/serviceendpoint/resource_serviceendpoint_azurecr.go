@@ -58,7 +58,7 @@ func ResourceServiceEndpointAzureCR() *schema.Resource {
 }
 
 // Convert internal Terraform data structure to an AzDO data structure
-func expandServiceEndpointAzureCR(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *uuid.UUID, error) {
+func expandServiceEndpointAzureCR(d *schema.ResourceData) (*serviceEndpointWithValidation, *uuid.UUID, error) {
 	serviceEndpoint, projectID := doBaseExpansion(d)
 	subscriptionID := d.Get("azurecr_subscription_id")
 	scope := fmt.Sprintf(
@@ -90,23 +90,23 @@ func expandServiceEndpointAzureCR(d *schema.ResourceData) (*serviceendpoint.Serv
 	azureContainerRegistryURL := fmt.Sprintf("https://%s", loginServer)
 	serviceEndpoint.Url = converter.String(azureContainerRegistryURL)
 
-	return serviceEndpoint, projectID, nil
+	return &serviceEndpointWithValidation{endpoint: serviceEndpoint}, projectID, nil
 }
 
 // Convert AzDO data structure to internal Terraform data structure
-func flattenServiceEndpointAzureCR(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
-	doBaseFlattening(d, serviceEndpoint, projectID)
-	d.Set("azurecr_spn_tenantid", (*serviceEndpoint.Authorization.Parameters)["tenantId"])
-	d.Set("azurecr_subscription_id", (*serviceEndpoint.Data)["subscriptionId"])
-	d.Set("azurecr_subscription_name", (*serviceEndpoint.Data)["subscriptionName"])
+func flattenServiceEndpointAzureCR(d *schema.ResourceData, serviceEndpoint *serviceEndpointWithValidation, projectID *uuid.UUID) {
+	doBaseFlattening(d, serviceEndpoint.endpoint, projectID)
+	d.Set("azurecr_spn_tenantid", (*serviceEndpoint.endpoint.Authorization.Parameters)["tenantId"])
+	d.Set("azurecr_subscription_id", (*serviceEndpoint.endpoint.Data)["subscriptionId"])
+	d.Set("azurecr_subscription_name", (*serviceEndpoint.endpoint.Data)["subscriptionName"])
 
-	d.Set("app_object_id", (*serviceEndpoint.Data)["appObjectId"])
-	d.Set("spn_object_id", (*serviceEndpoint.Data)["spnObjectId"])
-	d.Set("az_spn_role_permissions", (*serviceEndpoint.Data)["azureSpnPermissions"])
-	d.Set("az_spn_role_assignment_id", (*serviceEndpoint.Data)["azureSpnRoleAssignmentId"])
-	d.Set("service_principal_id", (*serviceEndpoint.Authorization.Parameters)["serviceprincipalid"])
+	d.Set("app_object_id", (*serviceEndpoint.endpoint.Data)["appObjectId"])
+	d.Set("spn_object_id", (*serviceEndpoint.endpoint.Data)["spnObjectId"])
+	d.Set("az_spn_role_permissions", (*serviceEndpoint.endpoint.Data)["azureSpnPermissions"])
+	d.Set("az_spn_role_assignment_id", (*serviceEndpoint.endpoint.Data)["azureSpnRoleAssignmentId"])
+	d.Set("service_principal_id", (*serviceEndpoint.endpoint.Authorization.Parameters)["serviceprincipalid"])
 
-	scope := (*serviceEndpoint.Authorization.Parameters)["scope"]
+	scope := (*serviceEndpoint.endpoint.Authorization.Parameters)["scope"]
 	s := strings.SplitN(scope, "/", -1)
 	d.Set("resource_group", s[4])
 	d.Set("azurecr_name", s[8])

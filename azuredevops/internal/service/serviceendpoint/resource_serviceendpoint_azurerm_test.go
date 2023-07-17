@@ -23,8 +23,8 @@ var azurermTestServiceEndpointAzureRMID = uuid.New()
 var azurermRandomServiceEndpointAzureRMProjectID = uuid.New()
 var azurermTestServiceEndpointAzureRMProjectID = &azurermRandomServiceEndpointAzureRMProjectID
 
-func getManualAuthServiceEndpoint() serviceendpoint.ServiceEndpoint {
-	return serviceendpoint.ServiceEndpoint{
+func getManualAuthServiceEndpoint() *serviceendpoint.ServiceEndpoint {
+	return &serviceendpoint.ServiceEndpoint{
 		Authorization: &serviceendpoint.EndpointAuthorization{
 			Parameters: &map[string]string{
 				"authenticationType":  "spnKey",
@@ -41,12 +41,11 @@ func getManualAuthServiceEndpoint() serviceendpoint.ServiceEndpoint {
 			"subscriptionId":   "42125daf-72fd-417c-9ea7-080690625ad3", //fake value
 			"subscriptionName": "SUBSCRIPTION_TEST",
 		},
-		IsReady: converter.Bool(false),
-		Id:      &azurermTestServiceEndpointAzureRMID,
-		Name:    converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
-		Owner:   converter.String("library"), // Supported values are "library", "agentcloud"
-		Type:    converter.String("azurerm"),
-		Url:     converter.String("https://management.azure.com/"),
+		Id:    &azurermTestServiceEndpointAzureRMID,
+		Name:  converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
+		Owner: converter.String("library"), // Supported values are "library", "agentcloud"
+		Type:  converter.String("azurerm"),
+		Url:   converter.String("https://management.azure.com/"),
 		ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
 			{
 				ProjectReference: &serviceendpoint.ProjectReference{
@@ -59,82 +58,125 @@ func getManualAuthServiceEndpoint() serviceendpoint.ServiceEndpoint {
 	}
 }
 
-var azurermTestServiceEndpointsAzureRM = []serviceendpoint.ServiceEndpoint{
-	getManualAuthServiceEndpoint(),
+var azurermTestServiceEndpointsAzureRM = []serviceEndpointWithValidation{
 	{
-		Authorization: &serviceendpoint.EndpointAuthorization{
-			Parameters: &map[string]string{
-				"authenticationType":  "spnKey",
-				"serviceprincipalid":  "",
-				"serviceprincipalkey": "",
-				"tenantid":            "aba07645-051c-44b4-b806-c34d33f3dcd1", //fake value
-			},
-			Scheme: converter.String("ServicePrincipal"),
-		},
-		Data: &map[string]string{
-			"creationMode":     "Automatic",
-			"environment":      "AzureCloud",
-			"scopeLevel":       "Subscription",
-			"subscriptionId":   "42125daf-72fd-417c-9ea7-080690625ad3", //fake value
-			"subscriptionName": "SUBSCRIPTION_TEST",
-		},
-		IsReady: converter.Bool(true),
-		Id:      &azurermTestServiceEndpointAzureRMID,
-		Name:    converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
-		Owner:   converter.String("library"), // Supported values are "library", "agentcloud"
-		Type:    converter.String("azurerm"),
-		Url:     converter.String("https://management.azure.com/"),
-		ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
-			{
-				ProjectReference: &serviceendpoint.ProjectReference{
-					Id: azurermTestServiceEndpointAzureRMProjectID,
-				},
-				Name:        converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
-				Description: converter.String("_AZURERM_UNIT_TEST_CONN_DESCRIPTION"),
-			},
-		},
+		endpoint: getManualAuthServiceEndpoint(),
+		validate: false,
 	},
 	{
-		Authorization: &serviceendpoint.EndpointAuthorization{
-			Parameters: &map[string]string{
-				"authenticationType":  "spnKey",
-				"serviceprincipalid":  "",
-				"serviceprincipalkey": "",
-				"tenantid":            "aba07645-051c-44b4-b806-c34d33f3dcd1", //fake value
-				"scope":               "/subscriptions/42125daf-72fd-417c-9ea7-080690625ad3/resourcegroups/test",
-			},
-			Scheme: converter.String("ServicePrincipal"),
-		},
-		Data: &map[string]string{
-			"creationMode":     "Automatic",
-			"environment":      "AzureCloud",
-			"scopeLevel":       "Subscription",
-			"subscriptionId":   "42125daf-72fd-417c-9ea7-080690625ad3", //fake value
-			"subscriptionName": "SUBSCRIPTION_TEST",
-		},
-		IsReady: converter.Bool(true),
-		Id:      &azurermTestServiceEndpointAzureRMID,
-		Name:    converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
-		Owner:   converter.String("library"), // Supported values are "library", "agentcloud"
-		Type:    converter.String("azurerm"),
-		Url:     converter.String("https://management.azure.com/"),
-		ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
-			{
-				ProjectReference: &serviceendpoint.ProjectReference{
-					Id: azurermTestServiceEndpointAzureRMProjectID,
+		endpoint: &serviceendpoint.ServiceEndpoint{
+			Authorization: &serviceendpoint.EndpointAuthorization{
+				Parameters: &map[string]string{
+					"authenticationType":  "spnKey",
+					"serviceprincipalid":  "",
+					"serviceprincipalkey": "",
+					"tenantid":            "aba07645-051c-44b4-b806-c34d33f3dcd1", //fake value
 				},
-				Name:        converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
-				Description: converter.String("_AZURERM_UNIT_TEST_CONN_DESCRIPTION"),
+				Scheme: converter.String("ServicePrincipal"),
+			},
+			Data: &map[string]string{
+				"creationMode":     "Automatic",
+				"environment":      "AzureCloud",
+				"scopeLevel":       "Subscription",
+				"subscriptionId":   "42125daf-72fd-417c-9ea7-080690625ad3", //fake value
+				"subscriptionName": "SUBSCRIPTION_TEST",
+			},
+			Id:    &azurermTestServiceEndpointAzureRMID,
+			Name:  converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
+			Owner: converter.String("library"), // Supported values are "library", "agentcloud"
+			Type:  converter.String("azurerm"),
+			Url:   converter.String("https://management.azure.com/"),
+			ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
+				{
+					ProjectReference: &serviceendpoint.ProjectReference{
+						Id: azurermTestServiceEndpointAzureRMProjectID,
+					},
+					Name:        converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
+					Description: converter.String("_AZURERM_UNIT_TEST_CONN_DESCRIPTION"),
+				},
 			},
 		},
+		validate: false,
+	},
+	{
+		endpoint: &serviceendpoint.ServiceEndpoint{
+			Authorization: &serviceendpoint.EndpointAuthorization{
+				Parameters: &map[string]string{
+					"authenticationType":  "spnKey",
+					"serviceprincipalid":  "",
+					"serviceprincipalkey": "",
+					"tenantid":            "aba07645-051c-44b4-b806-c34d33f3dcd1", //fake value
+					"scope":               "/subscriptions/42125daf-72fd-417c-9ea7-080690625ad3/resourcegroups/test",
+				},
+				Scheme: converter.String("ServicePrincipal"),
+			},
+			Data: &map[string]string{
+				"creationMode":     "Automatic",
+				"environment":      "AzureCloud",
+				"scopeLevel":       "Subscription",
+				"subscriptionId":   "42125daf-72fd-417c-9ea7-080690625ad3", //fake value
+				"subscriptionName": "SUBSCRIPTION_TEST",
+			},
+			Id:    &azurermTestServiceEndpointAzureRMID,
+			Name:  converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
+			Owner: converter.String("library"), // Supported values are "library", "agentcloud"
+			Type:  converter.String("azurerm"),
+			Url:   converter.String("https://management.azure.com/"),
+			ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
+				{
+					ProjectReference: &serviceendpoint.ProjectReference{
+						Id: azurermTestServiceEndpointAzureRMProjectID,
+					},
+					Name:        converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
+					Description: converter.String("_AZURERM_UNIT_TEST_CONN_DESCRIPTION"),
+				},
+			},
+		},
+		validate: false,
+	},
+	{
+		endpoint: &serviceendpoint.ServiceEndpoint{
+			Authorization: &serviceendpoint.EndpointAuthorization{
+				Parameters: &map[string]string{
+					"authenticationType":  "spnKey",
+					"serviceprincipalid":  "",
+					"serviceprincipalkey": "",
+					"tenantid":            "aba07645-051c-44b4-b806-c34d33f3dcd1", //fake value
+					"scope":               "/subscriptions/42125daf-72fd-417c-9ea7-080690625ad3/resourcegroups/test",
+				},
+				Scheme: converter.String("ServicePrincipal"),
+			},
+			Data: &map[string]string{
+				"creationMode":     "Automatic",
+				"environment":      "AzureCloud",
+				"scopeLevel":       "Subscription",
+				"subscriptionId":   "42125daf-72fd-417c-9ea7-080690625ad3", //fake value
+				"subscriptionName": "SUBSCRIPTION_TEST",
+			},
+			Id:    &azurermTestServiceEndpointAzureRMID,
+			Name:  converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
+			Owner: converter.String("library"), // Supported values are "library", "agentcloud"
+			Type:  converter.String("azurerm"),
+			Url:   converter.String("https://management.azure.com/"),
+			ServiceEndpointProjectReferences: &[]serviceendpoint.ServiceEndpointProjectReference{
+				{
+					ProjectReference: &serviceendpoint.ProjectReference{
+						Id: azurermTestServiceEndpointAzureRMProjectID,
+					},
+					Name:        converter.String("_AZURERM_UNIT_TEST_CONN_NAME"),
+					Description: converter.String("_AZURERM_UNIT_TEST_CONN_DESCRIPTION"),
+				},
+			},
+		},
+		validate: true,
 	},
 }
 
 // verifies that the flatten/expand round trip yields the same service endpoint
 func TestServiceEndpointAzureRM_ExpandFlatten_Roundtrip(t *testing.T) {
 	for _, resource := range azurermTestServiceEndpointsAzureRM {
-		resourceData := getResourceData(t, resource)
-		flattenServiceEndpointAzureRM(resourceData, &resource, azurermTestServiceEndpointAzureRMProjectID)
+		resourceData := getResourceData(t, *resource.endpoint)
+		flattenServiceEndpointAzureRM(resourceData, &serviceEndpointWithValidation{endpoint: resource.endpoint, validate: resource.validate}, azurermTestServiceEndpointAzureRMProjectID)
 		serviceEndpointAfterRoundTrip, projectID, _ := expandServiceEndpointAzureRM(resourceData)
 
 		require.Equal(t, resource, *serviceEndpointAfterRoundTrip)
@@ -149,15 +191,15 @@ func TestServiceEndpointAzureRM_Create_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceServiceEndpointAzureRM()
 	for _, resource := range azurermTestServiceEndpointsAzureRM {
-		resourceData := getResourceData(t, resource)
-		flattenServiceEndpointAzureRM(resourceData, &resource, azurermTestServiceEndpointAzureRMProjectID)
+		resourceData := getResourceData(t, *resource.endpoint)
+		flattenServiceEndpointAzureRM(resourceData, &serviceEndpointWithValidation{endpoint: resource.endpoint}, azurermTestServiceEndpointAzureRMProjectID)
 
 		buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 		clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
-		expectedArgs := serviceendpoint.CreateServiceEndpointArgs{Endpoint: &resource}
+		expectedArgs := serviceendpoint.CreateServiceEndpointArgs{Endpoint: resource.endpoint}
 
-		if *resource.IsReady {
+		if resource.validate {
 			reqArgs := serviceendpoint.ExecuteServiceEndpointRequestArgs{
 				ServiceEndpointRequest: &serviceendpoint.ServiceEndpointRequest{
 					DataSourceDetails: &serviceendpoint.DataSourceDetails{
@@ -165,14 +207,14 @@ func TestServiceEndpointAzureRM_Create_DoesNotSwallowError(t *testing.T) {
 					},
 					ResultTransformationDetails: &serviceendpoint.ResultTransformationDetails{},
 					ServiceEndpointDetails: &serviceendpoint.ServiceEndpointDetails{
-						Data:          resource.Data,
-						Authorization: resource.Authorization,
-						Url:           resource.Url,
-						Type:          resource.Type,
+						Data:          resource.endpoint.Data,
+						Authorization: resource.endpoint.Authorization,
+						Url:           resource.endpoint.Url,
+						Type:          resource.endpoint.Type,
 					},
 				},
-				Project:    converter.String((*resource.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String()),
-				EndpointId: converter.String(resource.Id.String()),
+				Project:    converter.String((*resource.endpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String()),
+				EndpointId: converter.String(resource.endpoint.Id.String()),
 			}
 
 			buildClient.
@@ -188,7 +230,7 @@ func TestServiceEndpointAzureRM_Create_DoesNotSwallowError(t *testing.T) {
 				Times(1)
 
 			deleteArgs := serviceendpoint.DeleteServiceEndpointArgs{
-				EndpointId: resource.Id,
+				EndpointId: resource.endpoint.Id,
 				ProjectIds: &[]string{
 					azurermTestServiceEndpointAzureRMProjectID.String(),
 				},
@@ -222,14 +264,14 @@ func TestServiceEndpointAzureRM_Read_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceServiceEndpointAzureRM()
 	for _, resource := range azurermTestServiceEndpointsAzureRM {
-		resourceData := getResourceData(t, resource)
-		flattenServiceEndpointAzureRM(resourceData, &resource, azurermTestServiceEndpointAzureRMProjectID)
+		resourceData := getResourceData(t, *resource.endpoint)
+		flattenServiceEndpointAzureRM(resourceData, &serviceEndpointWithValidation{endpoint: resource.endpoint}, azurermTestServiceEndpointAzureRMProjectID)
 
 		buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 		clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
 		expectedArgs := serviceendpoint.GetServiceEndpointDetailsArgs{
-			EndpointId: resource.Id,
+			EndpointId: resource.endpoint.Id,
 			Project:    converter.String(azurermTestServiceEndpointAzureRMProjectID.String()),
 		}
 
@@ -251,14 +293,14 @@ func TestServiceEndpointAzureRM_Delete_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceServiceEndpointAzureRM()
 	for _, resource := range azurermTestServiceEndpointsAzureRM {
-		resourceData := getResourceData(t, resource)
-		flattenServiceEndpointAzureRM(resourceData, &resource, azurermTestServiceEndpointAzureRMProjectID)
+		resourceData := getResourceData(t, *resource.endpoint)
+		flattenServiceEndpointAzureRM(resourceData, &serviceEndpointWithValidation{endpoint: resource.endpoint}, azurermTestServiceEndpointAzureRMProjectID)
 
 		buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 		clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
 		expectedArgs := serviceendpoint.DeleteServiceEndpointArgs{
-			EndpointId: resource.Id,
+			EndpointId: resource.endpoint.Id,
 			ProjectIds: &[]string{
 				azurermTestServiceEndpointAzureRMProjectID.String(),
 			},
@@ -282,18 +324,18 @@ func TestServiceEndpointAzureRM_Update_DoesNotSwallowError(t *testing.T) {
 
 	r := ResourceServiceEndpointAzureRM()
 	for _, resource := range azurermTestServiceEndpointsAzureRM {
-		resourceData := getResourceData(t, resource)
-		flattenServiceEndpointAzureRM(resourceData, &resource, azurermTestServiceEndpointAzureRMProjectID)
+		resourceData := getResourceData(t, *resource.endpoint)
+		flattenServiceEndpointAzureRM(resourceData, &serviceEndpointWithValidation{endpoint: resource.endpoint}, azurermTestServiceEndpointAzureRMProjectID)
 
 		buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 		clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
 
 		expectedArgs := serviceendpoint.UpdateServiceEndpointArgs{
-			Endpoint:   &resource,
-			EndpointId: resource.Id,
+			Endpoint:   resource.endpoint,
+			EndpointId: resource.endpoint.Id,
 		}
 
-		if *resource.IsReady {
+		if resource.validate {
 			reqArgs := serviceendpoint.ExecuteServiceEndpointRequestArgs{
 				ServiceEndpointRequest: &serviceendpoint.ServiceEndpointRequest{
 					DataSourceDetails: &serviceendpoint.DataSourceDetails{
@@ -301,14 +343,14 @@ func TestServiceEndpointAzureRM_Update_DoesNotSwallowError(t *testing.T) {
 					},
 					ResultTransformationDetails: &serviceendpoint.ResultTransformationDetails{},
 					ServiceEndpointDetails: &serviceendpoint.ServiceEndpointDetails{
-						Data:          resource.Data,
-						Authorization: resource.Authorization,
-						Url:           resource.Url,
-						Type:          resource.Type,
+						Data:          resource.endpoint.Data,
+						Authorization: resource.endpoint.Authorization,
+						Url:           resource.endpoint.Url,
+						Type:          resource.endpoint.Type,
 					},
 				},
-				Project:    converter.String((*resource.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String()),
-				EndpointId: converter.String(resource.Id.String()),
+				Project:    converter.String((*resource.endpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String()),
+				EndpointId: converter.String(resource.endpoint.Id.String()),
 			}
 			buildClient.
 				EXPECT().

@@ -175,7 +175,7 @@ func ResourceServiceEndpointKubernetes() *schema.Resource {
 }
 
 // Convert internal Terraform data structure to an AzDO data structure
-func expandServiceEndpointKubernetes(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *uuid.UUID, error) {
+func expandServiceEndpointKubernetes(d *schema.ResourceData) (*serviceEndpointWithValidation, *uuid.UUID, error) {
 	serviceEndpoint, projectID := doBaseExpansion(d)
 	serviceEndpoint.Type = converter.String("kubernetes")
 	serviceEndpoint.Url = converter.String(d.Get(resourceAttrAPIURL).(string))
@@ -247,18 +247,18 @@ func expandServiceEndpointKubernetes(d *schema.ResourceData) (*serviceendpoint.S
 		}
 	}
 
-	return serviceEndpoint, projectID, nil
+	return &serviceEndpointWithValidation{endpoint: serviceEndpoint}, projectID, nil
 }
 
 // Convert AzDO data structure to internal Terraform data structure
-func flattenServiceEndpointKubernetes(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
-	doBaseFlattening(d, serviceEndpoint, projectID)
-	d.Set(resourceAttrAuthType, (*serviceEndpoint.Data)[serviceEndpointDataAttrAuthType])
-	d.Set(resourceAttrAPIURL, (*serviceEndpoint.Url))
+func flattenServiceEndpointKubernetes(d *schema.ResourceData, serviceEndpoint *serviceEndpointWithValidation, projectID *uuid.UUID) {
+	doBaseFlattening(d, serviceEndpoint.endpoint, projectID)
+	d.Set(resourceAttrAuthType, (*serviceEndpoint.endpoint.Data)[serviceEndpointDataAttrAuthType])
+	d.Set(resourceAttrAPIURL, (*serviceEndpoint.endpoint.Url))
 
-	switch (*serviceEndpoint.Data)[serviceEndpointDataAttrAuthType] {
+	switch (*serviceEndpoint.endpoint.Data)[serviceEndpointDataAttrAuthType] {
 	case "AzureSubscription":
-		clusterIDSplit := strings.Split((*serviceEndpoint.Data)["clusterId"], "/")
+		clusterIDSplit := strings.Split((*serviceEndpoint.endpoint.Data)["clusterId"], "/")
 		var clusterNameIndex int
 		var resourceGroupIDIndex int
 		for k, v := range clusterIDSplit {
@@ -269,15 +269,15 @@ func flattenServiceEndpointKubernetes(d *schema.ResourceData, serviceEndpoint *s
 				clusterNameIndex = k + 1
 			}
 		}
-		clusterAdmin, _ := strconv.ParseBool((*serviceEndpoint.Data)["clusterAdmin"])
+		clusterAdmin, _ := strconv.ParseBool((*serviceEndpoint.endpoint.Data)["clusterAdmin"])
 		configItems := map[string]interface{}{
-			"azure_environment": (*serviceEndpoint.Authorization.Parameters)["azureEnvironment"],
-			"tenant_id":         (*serviceEndpoint.Authorization.Parameters)["azureTenantId"],
-			"subscription_id":   (*serviceEndpoint.Data)["azureSubscriptionId"],
-			"subscription_name": (*serviceEndpoint.Data)["azureSubscriptionName"],
+			"azure_environment": (*serviceEndpoint.endpoint.Authorization.Parameters)["azureEnvironment"],
+			"tenant_id":         (*serviceEndpoint.endpoint.Authorization.Parameters)["azureTenantId"],
+			"subscription_id":   (*serviceEndpoint.endpoint.Data)["azureSubscriptionId"],
+			"subscription_name": (*serviceEndpoint.endpoint.Data)["azureSubscriptionName"],
 			"cluster_name":      clusterIDSplit[clusterNameIndex],
 			"resourcegroup_id":  clusterIDSplit[resourceGroupIDIndex],
-			"namespace":         (*serviceEndpoint.Data)["namespace"],
+			"namespace":         (*serviceEndpoint.endpoint.Data)["namespace"],
 			"cluster_admin":     clusterAdmin,
 		}
 		configItemList := make([]map[string]interface{}, 1)
@@ -289,10 +289,10 @@ func flattenServiceEndpointKubernetes(d *schema.ResourceData, serviceEndpoint *s
 		kubeconfigSet := d.Get("kubeconfig").([]interface{})
 
 		configuration := kubeconfigSet[0].(map[string]interface{})
-		acceptUntrustedCerts, _ := strconv.ParseBool((*serviceEndpoint.Data)["acceptUntrustedCerts"])
+		acceptUntrustedCerts, _ := strconv.ParseBool((*serviceEndpoint.endpoint.Data)["acceptUntrustedCerts"])
 		kubeconfig = map[string]interface{}{
 			"kube_config":            configuration["kube_config"].(string),
-			"cluster_context":        (*serviceEndpoint.Authorization.Parameters)["clusterContext"],
+			"cluster_context":        (*serviceEndpoint.endpoint.Authorization.Parameters)["clusterContext"],
 			"accept_untrusted_certs": acceptUntrustedCerts,
 		}
 

@@ -56,7 +56,7 @@ func ResourceServiceEndpointSSH() *schema.Resource {
 	return r
 }
 
-func expandServiceEndpointSSH(d *schema.ResourceData) (*serviceendpoint.ServiceEndpoint, *uuid.UUID, error) {
+func expandServiceEndpointSSH(d *schema.ResourceData) (*serviceEndpointWithValidation, *uuid.UUID, error) {
 	serviceEndpoint, projectID := doBaseExpansion(d)
 	serviceEndpoint.Authorization = &serviceendpoint.EndpointAuthorization{
 		Scheme: converter.String("UsernamePassword"),
@@ -79,17 +79,17 @@ func expandServiceEndpointSSH(d *schema.ResourceData) (*serviceendpoint.ServiceE
 	}
 	serviceEndpoint.Data = &data
 
-	return serviceEndpoint, projectID, nil
+	return &serviceEndpointWithValidation{endpoint: serviceEndpoint}, projectID, nil
 }
 
-func flattenServiceEndpointSSH(d *schema.ResourceData, serviceEndpoint *serviceendpoint.ServiceEndpoint, projectID *uuid.UUID) {
-	doBaseFlattening(d, serviceEndpoint, projectID)
-	d.Set("host", (*serviceEndpoint.Data)["Host"])
-	if portStr, ok := (*serviceEndpoint.Data)["Port"]; ok {
+func flattenServiceEndpointSSH(d *schema.ResourceData, serviceEndpoint *serviceEndpointWithValidation, projectID *uuid.UUID) {
+	doBaseFlattening(d, serviceEndpoint.endpoint, projectID)
+	d.Set("host", (*serviceEndpoint.endpoint.Data)["Host"])
+	if portStr, ok := (*serviceEndpoint.endpoint.Data)["Port"]; ok {
 		port, _ := strconv.ParseInt(portStr, 10, 64)
 		d.Set("port", port)
 	}
-	d.Set("username", (*serviceEndpoint.Authorization.Parameters)["username"])
+	d.Set("username", (*serviceEndpoint.endpoint.Authorization.Parameters)["username"])
 	tfhelper.HelpFlattenSecret(d, "private_key")
 	tfhelper.HelpFlattenSecret(d, "password")
 }
