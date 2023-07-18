@@ -55,7 +55,7 @@ func TestServiceEndpointGitHubEnterprise_ExpandFlatten_Roundtrip(t *testing.T) {
 	serviceEndpointAfterRoundTrip, projectID, err := expandServiceEndpointGitHubEnterprise(resourceData)
 
 	require.Nil(t, err)
-	require.Equal(t, ghesTestServiceEndpoint, *serviceEndpointAfterRoundTrip)
+	require.Equal(t, serviceEndpointWithValidation{endpoint: &ghesTestServiceEndpoint}, *serviceEndpointAfterRoundTrip)
 	require.Equal(t, ghesTestServiceEndpointProjectID, projectID)
 }
 

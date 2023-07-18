@@ -192,7 +192,7 @@ func TestServiceEndpointAzureRM_Create_DoesNotSwallowError(t *testing.T) {
 	r := ResourceServiceEndpointAzureRM()
 	for _, resource := range azurermTestServiceEndpointsAzureRM {
 		resourceData := getResourceData(t, *resource.endpoint)
-		flattenServiceEndpointAzureRM(resourceData, &serviceEndpointWithValidation{endpoint: resource.endpoint}, azurermTestServiceEndpointAzureRMProjectID)
+		flattenServiceEndpointAzureRM(resourceData, &serviceEndpointWithValidation{endpoint: resource.endpoint, validate: resource.validate}, azurermTestServiceEndpointAzureRMProjectID)
 
 		buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 		clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -220,7 +220,7 @@ func TestServiceEndpointAzureRM_Create_DoesNotSwallowError(t *testing.T) {
 			buildClient.
 				EXPECT().
 				CreateServiceEndpoint(clients.Ctx, expectedArgs).
-				Return(&resource, nil).
+				Return(resource.endpoint, nil).
 				Times(1)
 
 			buildClient.
@@ -325,7 +325,7 @@ func TestServiceEndpointAzureRM_Update_DoesNotSwallowError(t *testing.T) {
 	r := ResourceServiceEndpointAzureRM()
 	for _, resource := range azurermTestServiceEndpointsAzureRM {
 		resourceData := getResourceData(t, *resource.endpoint)
-		flattenServiceEndpointAzureRM(resourceData, &serviceEndpointWithValidation{endpoint: resource.endpoint}, azurermTestServiceEndpointAzureRMProjectID)
+		flattenServiceEndpointAzureRM(resourceData, &serviceEndpointWithValidation{endpoint: resource.endpoint, validate: resource.validate}, azurermTestServiceEndpointAzureRMProjectID)
 
 		buildClient := azdosdkmocks.NewMockServiceendpointClient(ctrl)
 		clients := &client.AggregatedClient{ServiceEndpointClient: buildClient, Ctx: context.Background()}
@@ -355,7 +355,7 @@ func TestServiceEndpointAzureRM_Update_DoesNotSwallowError(t *testing.T) {
 			buildClient.
 				EXPECT().
 				ExecuteServiceEndpointRequest(clients.Ctx, reqArgs).
-				Return(nil, errors.New("ExecuteServiceEndpointRequest() failed")).
+				Return(nil, errors.New("ExecuteServiceEndpointRequest() Failed")).
 				Times(1)
 
 			err := r.Update(resourceData, clients)

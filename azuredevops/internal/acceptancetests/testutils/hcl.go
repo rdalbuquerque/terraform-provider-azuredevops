@@ -449,6 +449,26 @@ data "azuredevops_serviceendpoint_azurerm" "serviceendpointrm" {
 }
 
 // HclServiceEndpointAzureRMResource HCL describing an AzDO service endpoint
+func HclServiceEndpointAzureRMResourceWithValidate(projectName string, serviceEndpointName string, serviceprincipalid string, serviceprincipalkey string, validate bool) string {
+	serviceEndpointResource := fmt.Sprintf(`
+resource "azuredevops_serviceendpoint_azurerm" "serviceendpointrm" {
+  project_id            = azuredevops_project.project.id
+  service_endpoint_name = "%s"
+  credentials {
+    serviceprincipalid  = "%s"
+    serviceprincipalkey = "%s"
+  }
+  azurerm_spn_tenantid      = "9c59cbe5-2ca1-4516-b303-8968a070edd2"
+  azurerm_subscription_id   = "3b0fee91-c36d-4d70-b1e9-fc4b9d608c3d"
+  azurerm_subscription_name = "Microsoft Azure DEMO"
+  validate                  = %v
+}`, serviceEndpointName, serviceprincipalid, serviceprincipalkey, validate)
+
+	projectResource := HclProjectResource(projectName)
+	return fmt.Sprintf("%s\n%s", projectResource, serviceEndpointResource)
+}
+
+// HclServiceEndpointAzureRMResource HCL describing an AzDO service endpoint
 func HclServiceEndpointAzureRMResource(projectName string, serviceEndpointName string, serviceprincipalid string, serviceprincipalkey string) string {
 	serviceEndpointResource := fmt.Sprintf(`
 resource "azuredevops_serviceendpoint_azurerm" "serviceendpointrm" {

@@ -58,7 +58,7 @@ func TestServiceEndpointServiceFabric_FlattenExpand_Roundtrip(t *testing.T) {
 	serviceEndpointAfterRoundTrip, projectID, err := expandServiceEndpointServiceFabric(resourceData)
 
 	require.Nil(t, err)
-	require.Equal(t, serviceFabricTestServiceEndpoint, *serviceEndpointAfterRoundTrip)
+	require.Equal(t, serviceEndpointWithValidation{endpoint: &serviceFabricTestServiceEndpoint}, *serviceEndpointAfterRoundTrip)
 	require.Equal(t, serviceFabricTestServiceEndpointProjectID, projectID)
 }
 

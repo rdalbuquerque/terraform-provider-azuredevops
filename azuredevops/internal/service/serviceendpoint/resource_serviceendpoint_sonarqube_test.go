@@ -53,7 +53,7 @@ func TestServiceEndpointSonarQube_ExpandFlatten_Roundtrip(t *testing.T) {
 
 	serviceEndpointAfterRoundTrip, projectID, err := expandServiceEndpointSonarQube(resourceData)
 
-	require.Equal(t, sonarQubeTestServiceEndpoint, *serviceEndpointAfterRoundTrip)
+	require.Equal(t, serviceEndpointWithValidation{endpoint: &sonarQubeTestServiceEndpoint}, *serviceEndpointAfterRoundTrip)
 	require.Equal(t, sonarQubeTestServiceEndpointProjectID, projectID)
 	require.Nil(t, err)
 }

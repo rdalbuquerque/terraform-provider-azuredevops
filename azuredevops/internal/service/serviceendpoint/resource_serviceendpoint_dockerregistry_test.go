@@ -59,7 +59,7 @@ func TestServiceEndpointDockerRegistry_ExpandFlatten_Roundtrip(t *testing.T) {
 
 	serviceEndpointAfterRoundTrip, projectID, err := expandServiceEndpointDockerRegistry(resourceData)
 
-	require.Equal(t, dockerRegistryTestServiceEndpoint, *serviceEndpointAfterRoundTrip)
+	require.Equal(t, serviceEndpointWithValidation{endpoint: &dockerRegistryTestServiceEndpoint}, *serviceEndpointAfterRoundTrip)
 	require.Equal(t, dockerRegistryTestServiceEndpointProjectID, projectID)
 	require.Nil(t, err)
 }

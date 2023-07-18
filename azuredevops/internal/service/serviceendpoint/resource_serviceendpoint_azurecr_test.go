@@ -73,7 +73,7 @@ func TestServiceEndpointAzureCR_ExpandFlatten_Roundtrip(t *testing.T) {
 
 	serviceEndpointAfterRoundTrip, projectID, err := expandServiceEndpointAzureCR(resourceData)
 
-	require.Equal(t, azureCRTestServiceEndpoint, *serviceEndpointAfterRoundTrip)
+	require.Equal(t, serviceEndpointWithValidation{endpoint: &azureCRTestServiceEndpoint}, *serviceEndpointAfterRoundTrip)
 	require.Equal(t, azureCRTestServiceEndpointProjectID, projectID)
 	require.Nil(t, err)
 }

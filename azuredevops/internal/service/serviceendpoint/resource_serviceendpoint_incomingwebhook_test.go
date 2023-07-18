@@ -55,7 +55,7 @@ func TestServiceEndpointIncomingWebhook_ExpandFlatten_Roundtrip(t *testing.T) {
 
 	serviceEndpointAfterRoundTrip, projectID, err := expandServiceEndpointIncomingWebhook(resourceData)
 
-	require.Equal(t, incomingWebhookTestServiceEndpoint, *serviceEndpointAfterRoundTrip)
+	require.Equal(t, serviceEndpointWithValidation{endpoint: &incomingWebhookTestServiceEndpoint}, *serviceEndpointAfterRoundTrip)
 	require.Equal(t, incomingWebhookTestServiceEndpointProjectID, projectID)
 	require.Nil(t, err)
 }

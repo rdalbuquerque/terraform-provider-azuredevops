@@ -5,6 +5,8 @@
 package acceptancetests
 
 import (
+	"regexp"
+	"strconv"
 	"testing"
 
 	"github.com/google/uuid"
@@ -15,7 +17,7 @@ import (
 // validates that an apply followed by another apply (i.e., resource update) will be reflected in AzDO and the
 // underlying terraform state.
 func TestAccServiceEndpointAzureRm_CreateAndUpdate(t *testing.T) {
-	t.Skip("Skipping test TestAccServiceEndpointAzureRm_CreateAndUpdate: test resource limit")
+	// t.Skip("Skipping test TestAccServiceEndpointAzureRm_CreateAndUpdate: test resource limit")
 	projectName := testutils.GenerateResourceName()
 	serviceEndpointNameFirst := testutils.GenerateResourceName()
 	serviceEndpointNameSecond := testutils.GenerateResourceName()
@@ -57,6 +59,66 @@ func TestAccServiceEndpointAzureRm_CreateAndUpdate(t *testing.T) {
 					resource.TestCheckResourceAttrSet(tfSvcEpNode, "credentials.0.serviceprincipalkey_hash"),
 					resource.TestCheckResourceAttr(tfSvcEpNode, "credentials.0.serviceprincipalkey", serviceprincipalkeySecond),
 				),
+			},
+		},
+	})
+}
+
+func TestAccServiceEndpointAzureRm_CreateAndUpdate_WithValidate(t *testing.T) {
+	// t.Skip("Skipping test TestAccServiceEndpointAzureRm_CreateAndUpdate: test resource limit")
+	projectName := testutils.GenerateResourceName()
+	serviceEndpointNameFirst := testutils.GenerateResourceName()
+	serviceprincipalidFirst := uuid.New().String()
+	serviceprincipalkeyFirst := uuid.New().String()
+	validateFirst := false
+	validateSecond := true
+
+	resourceType := "azuredevops_serviceendpoint_azurerm"
+	tfSvcEpNode := resourceType + ".serviceendpointrm"
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testutils.PreCheck(t, nil) },
+		Providers:    testutils.GetProviders(),
+		CheckDestroy: testutils.CheckServiceEndpointDestroyed(resourceType),
+		Steps: []resource.TestStep{
+			{
+				Config: testutils.HclServiceEndpointAzureRMResourceWithValidate(projectName, serviceEndpointNameFirst, serviceprincipalidFirst, serviceprincipalkeyFirst, validateFirst),
+				Check: resource.ComposeTestCheckFunc(
+					testutils.CheckServiceEndpointExistsWithName(tfSvcEpNode, serviceEndpointNameFirst),
+					resource.TestCheckResourceAttrSet(tfSvcEpNode, "project_id"),
+					resource.TestCheckResourceAttrSet(tfSvcEpNode, "azurerm_spn_tenantid"),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "service_endpoint_name", serviceEndpointNameFirst),
+					resource.TestCheckResourceAttrSet(tfSvcEpNode, "azurerm_subscription_id"),
+					resource.TestCheckResourceAttrSet(tfSvcEpNode, "azurerm_subscription_name"),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "credentials.0.serviceprincipalid", serviceprincipalidFirst),
+					resource.TestCheckResourceAttrSet(tfSvcEpNode, "credentials.0.serviceprincipalkey_hash"),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "credentials.0.serviceprincipalkey", serviceprincipalkeyFirst),
+					resource.TestCheckResourceAttr(tfSvcEpNode, "validate", strconv.FormatBool(validateFirst)),
+				),
+			}, {
+				Config:      testutils.HclServiceEndpointAzureRMResourceWithValidate(projectName, serviceEndpointNameFirst, serviceprincipalidFirst, serviceprincipalkeyFirst, validateSecond),
+				ExpectError: regexp.MustCompile("Failed to obtain the Json Web Token"),
+			},
+		},
+	})
+}
+
+func TestAccServiceEndpointAzureRm_Create_WithValidate(t *testing.T) {
+	// t.Skip("Skipping test TestAccServiceEndpointAzureRm_CreateAndUpdate: test resource limit")
+	projectName := testutils.GenerateResourceName()
+	serviceEndpointName := testutils.GenerateResourceName()
+	serviceprincipalid := uuid.New().String()
+	serviceprincipalkey := uuid.New().String()
+	validate := true
+
+	resourceType := "azuredevops_serviceendpoint_azurerm"
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testutils.PreCheck(t, nil) },
+		Providers:    testutils.GetProviders(),
+		CheckDestroy: testutils.CheckServiceEndpointDestroyed(resourceType),
+		Steps: []resource.TestStep{
+			{
+				Config:      testutils.HclServiceEndpointAzureRMResourceWithValidate(projectName, serviceEndpointName, serviceprincipalid, serviceprincipalkey, validate),
+				ExpectError: regexp.MustCompile("Failed to obtain the Json Web Token"),
 			},
 		},
 	})

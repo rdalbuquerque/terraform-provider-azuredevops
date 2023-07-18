@@ -59,7 +59,7 @@ func TestServiceEndpointRunPipeline_ExpandFlatten_Roundtrip(t *testing.T) {
 	serviceEndpointAfterRoundTrip, projectID, err := expandServiceEndpointRunPipeline(resourceData)
 
 	require.Nil(t, err)
-	require.Equal(t, rpTestServiceEndpoint, *serviceEndpointAfterRoundTrip)
+	require.Equal(t, serviceEndpointWithValidation{endpoint: &rpTestServiceEndpoint}, *serviceEndpointAfterRoundTrip)
 	require.Equal(t, rpTestServiceEndpointProjectID, projectID)
 }
 

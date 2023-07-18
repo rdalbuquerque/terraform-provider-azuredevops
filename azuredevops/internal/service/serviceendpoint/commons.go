@@ -180,7 +180,7 @@ func genServiceEndpointCreateFunc(flatFunc flatFunc, expandFunc expandFunc) func
 		}
 
 		if serviceEndpoint.validate {
-			if err := validateServiceEndpointConnection(clients, createdServiceEndpoint); err != nil {
+			if err := validateServiceEndpointConnection(clients, serviceEndpoint.endpoint, converter.String(createdServiceEndpoint.Id.String())); err != nil {
 				if delErr := clients.ServiceEndpointClient.DeleteServiceEndpoint(
 					clients.Ctx,
 					serviceendpoint.DeleteServiceEndpointArgs{
@@ -251,7 +251,11 @@ func genServiceEndpointReadFunc(flatFunc flatFunc) func(d *schema.ResourceData, 
 			// e.g. service endpoint has been deleted separately without TF
 			d.SetId("")
 		} else {
-			flatFunc(d, &serviceEndpointWithValidation{endpoint: serviceEndpoint}, &projectID)
+			validate, ok := d.Get("validate").(bool)
+			if !ok {
+				validate = false
+			}
+			flatFunc(d, &serviceEndpointWithValidation{endpoint: serviceEndpoint, validate: validate}, &projectID)
 		}
 		return nil
 	}
@@ -266,17 +270,7 @@ func genServiceEndpointUpdateFunc(flatFunc flatFunc, expandFunc expandFunc) sche
 		}
 
 		if serviceEndpoint.validate {
-			if err := validateServiceEndpointConnection(clients, serviceEndpoint.endpoint); err != nil {
-				if delErr := clients.ServiceEndpointClient.DeleteServiceEndpoint(
-					clients.Ctx,
-					serviceendpoint.DeleteServiceEndpointArgs{
-						ProjectIds: &[]string{
-							projectID.String(),
-						},
-						EndpointId: serviceEndpoint.endpoint.Id,
-					}); delErr != nil {
-					return fmt.Errorf(" Delete service endpoint error %v", delErr)
-				}
+			if err := validateServiceEndpointConnection(clients, serviceEndpoint.endpoint, converter.String(serviceEndpoint.endpoint.Id.String())); err != nil {
 				return err
 			}
 		}
@@ -286,7 +280,7 @@ func genServiceEndpointUpdateFunc(flatFunc flatFunc, expandFunc expandFunc) sche
 			return fmt.Errorf("Error updating service endpoint in Azure DevOps: %+v", err)
 		}
 
-		flatFunc(d, &serviceEndpointWithValidation{endpoint: updatedServiceEndpoint}, projectID)
+		flatFunc(d, &serviceEndpointWithValidation{endpoint: updatedServiceEndpoint, validate: serviceEndpoint.validate}, projectID)
 		return genServiceEndpointReadFunc(flatFunc)(d, m)
 	}
 }
@@ -319,14 +313,10 @@ func createServiceEndpoint(clients *client.AggregatedClient, endpoint *serviceen
 			Endpoint: endpoint,
 		})
 
-	if err != nil {
-		return nil, err
-	}
-
 	return createdServiceEndpoint, err
 }
 
-func validateServiceEndpointConnection(clients *client.AggregatedClient, endpoint *serviceendpoint.ServiceEndpoint) error {
+func validateServiceEndpointConnection(clients *client.AggregatedClient, endpoint *serviceendpoint.ServiceEndpoint, serviceEndpointID *string) error {
 	reqArgs := serviceendpoint.ExecuteServiceEndpointRequestArgs{
 		ServiceEndpointRequest: &serviceendpoint.ServiceEndpointRequest{
 			DataSourceDetails: &serviceendpoint.DataSourceDetails{
@@ -341,7 +331,7 @@ func validateServiceEndpointConnection(clients *client.AggregatedClient, endpoin
 			},
 		},
 		Project:    converter.String((*endpoint.ServiceEndpointProjectReferences)[0].ProjectReference.Id.String()),
-		EndpointId: converter.String(endpoint.Id.String()),
+		EndpointId: serviceEndpointID,
 	}
 
 	maxRetries := 15

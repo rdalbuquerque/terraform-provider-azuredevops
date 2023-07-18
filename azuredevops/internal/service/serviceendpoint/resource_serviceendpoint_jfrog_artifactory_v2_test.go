@@ -83,7 +83,7 @@ func testServiceEndpointArtifactoryV2_ExpandFlatten_Roundtrip(t *testing.T, ep *
 
 		serviceEndpointAfterRoundTrip, projectID, err := expandServiceEndpointJFrogArtifactoryV2(resourceData)
 		require.Nil(t, err)
-		require.Equal(t, *ep, *serviceEndpointAfterRoundTrip)
+		require.Equal(t, serviceEndpointWithValidation{endpoint: ep}, *serviceEndpointAfterRoundTrip)
 		require.Equal(t, id, projectID)
 
 	}

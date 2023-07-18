@@ -126,7 +126,7 @@ func TestServiceEndpointKubernetesForAzureSubscriptionExpandFlattenRoundtrip(t *
 	serviceEndpointAfterRoundTrip, projectID, err := expandServiceEndpointKubernetes(resourceData)
 
 	require.Nil(t, err)
-	require.Equal(t, *kubernetesTestServiceEndpointForAzureSubscription, *serviceEndpointAfterRoundTrip)
+	require.Equal(t, serviceEndpointWithValidation{endpoint: kubernetesTestServiceEndpointForAzureSubscription}, *serviceEndpointAfterRoundTrip)
 	require.Equal(t, kubernetesTestServiceEndpointProjectID, projectID)
 }
 
@@ -248,7 +248,7 @@ func TestServiceEndpointKubernetesForKubeconfigExpandFlattenRoundtrip(t *testing
 
 	serviceEndpointAfterRoundTrip, projectID, err := expandServiceEndpointKubernetes(resourceData)
 	require.Nil(t, err)
-	require.Equal(t, *kubernetesTestServiceEndpointForKubeconfig, *serviceEndpointAfterRoundTrip)
+	require.Equal(t, serviceEndpointWithValidation{endpoint: kubernetesTestServiceEndpointForKubeconfig}, *serviceEndpointAfterRoundTrip)
 	require.Equal(t, kubernetesTestServiceEndpointProjectID, projectID)
 }
 
@@ -374,7 +374,7 @@ func TestServiceEndpointKubernetesForServiceAccountExpandFlattenRoundtrip(t *tes
 	serviceEndpointAfterRoundTrip, projectID, err := expandServiceEndpointKubernetes(resourceData)
 
 	require.Nil(t, err)
-	require.Equal(t, *kubernetesTestServiceEndpointForServiceAccount, *serviceEndpointAfterRoundTrip)
+	require.Equal(t, serviceEndpointWithValidation{endpoint: kubernetesTestServiceEndpointForServiceAccount}, *serviceEndpointAfterRoundTrip)
 	require.Equal(t, kubernetesTestServiceEndpointProjectID, projectID)
 }
 

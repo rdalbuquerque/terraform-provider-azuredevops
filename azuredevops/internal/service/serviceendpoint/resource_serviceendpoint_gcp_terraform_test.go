@@ -59,7 +59,7 @@ func TestServiceEndpointGcp_ExpandFlatten_Roundtrip(t *testing.T) {
 
 	serviceEndpointAfterRoundTrip, projectID, err := expandServiceEndpointGcp(resourceData)
 
-	require.Equal(t, gcpForTerraformTestServiceEndpoint, *serviceEndpointAfterRoundTrip)
+	require.Equal(t, serviceEndpointWithValidation{endpoint: &gcpForTerraformTestServiceEndpoint}, *serviceEndpointAfterRoundTrip)
 	require.Equal(t, gcpForTerraformTestServiceEndpointProjectID, projectID)
 	require.Nil(t, err)
 }

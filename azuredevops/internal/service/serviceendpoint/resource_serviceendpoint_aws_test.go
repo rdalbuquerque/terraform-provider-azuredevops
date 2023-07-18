@@ -58,7 +58,7 @@ func TestServiceEndpointAws_ExpandFlatten_Roundtrip(t *testing.T) {
 
 	serviceEndpointAfterRoundTrip, projectID, err := expandServiceEndpointAws(resourceData)
 
-	require.Equal(t, awsTestServiceEndpoint, *serviceEndpointAfterRoundTrip)
+	require.Equal(t, serviceEndpointWithValidation{endpoint: &awsTestServiceEndpoint}, *serviceEndpointAfterRoundTrip)
 	require.Equal(t, awsTestServiceEndpointProjectID, projectID)
 	require.Nil(t, err)
 }
