@@ -22,6 +22,7 @@ func ResourceServiceEndpointAzureRM() *schema.Resource {
 		Type:        schema.TypeBool,
 		Optional:    true,
 		Description: "Whether or not to validate the serviceendpoint on create/update operations",
+		Default:     false,
 	}
 
 	r.Schema["resource_group"] = &schema.Schema{

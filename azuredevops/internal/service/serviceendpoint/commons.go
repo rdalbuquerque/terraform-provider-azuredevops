@@ -478,13 +478,6 @@ func dataSourceGenBaseServiceEndpointResource(dataSourceReadFunc schema.ReadFunc
 				ValidateFunc: validation.IsUUID,
 			},
 
-			"validate": {
-				Description: "Whether or not to validate the serviceendpoint on creation/update",
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
-			},
-
 			"authorization": {
 				Type:     schema.TypeMap,
 				Computed: true,
